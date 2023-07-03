@@ -2,31 +2,72 @@ import User from "../../models/user";
 import { ApolloError } from "apollo-server-express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+// import sendgridTransport from "nodemailer-sendgrid-transport";
+import nodemailer from "nodemailer";
+
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+
+const transoprter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key:
+        "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",
+    },
+  })
+);
 
 const queries = {
-  users: async (root, args) => {
+  users: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+
     const users = await User.findAll();
     return users;
   },
 };
 
 const mutations = {
-  createUser: async (root, args) => {
-    const { email, firstname, lastname, phone, magazine, position } = args;
+  createUser: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+
+    const { email, firstname, lastname, phone, magazine, position, adres } =
+      args;
 
     const userTaken = await User.findOne({ where: { email: email } }).catch(
       (err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       }
     );
 
     if (userTaken) {
-      throw new ApolloError("Email already taken", "INPUT_ERROR");
+      throw new ApolloError("EMAIL TAKEN");
     }
 
     const randomPassword = Math.random().toString(36).slice(-8);
 
-    // wysyłanie hasła na poczte usera
+    transoprter
+      .sendMail({
+        to: email,
+        from: "atak2001@wp.pl",
+        subject: "Hasło do twojego konta",
+        html: `<h1>${randomPassword}</h1>`,
+      })
+      .then((result) => {
+        console.log("Wysłono na email");
+      })
+      .catch((err) => {
+        throw new ApolloError(
+          "Password cannot be send on that email",
+          "EMAIL_SEND_ERROR"
+        );
+      });
+
+    // tymczasowe
     console.log(randomPassword);
 
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
@@ -39,12 +80,22 @@ const mutations = {
       phone: phone,
       magazine: magazine,
       position: position,
+      adres: adres,
       firstLogin: true,
     }).catch((err) => {
       throw new ApolloError(err, "SERVER_ERROR");
     });
 
-    return true;
+    return {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      phone: user.phone,
+      magazine: user.magazine,
+      position: user.position,
+      adres: user.adres,
+    };
   },
   login: async (root, args) => {
     const { email, password } = args;
@@ -87,6 +138,7 @@ const mutations = {
       lastname: user.lastname,
       token: token,
       firstLogin: user.firstLogin,
+      expiresIn: "2h",
     };
   },
   changePassword: async (root, args) => {
@@ -121,6 +173,92 @@ const mutations = {
         throw new ApolloError(err, "SERVER_ERROR");
       });
     return true;
+  },
+  getUser: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+
+    const id = args.id;
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new ApolloError(
+        "User with that id do not exists ",
+        "USER DONT EXISTS"
+      );
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      phone: user.phone,
+      magazine: user.magazine,
+      position: user.position,
+      adres: user.adres,
+    };
+  },
+  deleteUser: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+
+    const id = args.id;
+    User.destroy({
+      where: {
+        id: id,
+      },
+    }).catch((err) => {
+      throw new ApolloError(err, "USER DONT EXISTS");
+    });
+    return true;
+  },
+  updateUser: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+    const { id, email, firstname, lastname, phone, magazine, position, adres } =
+      args;
+
+    await User.update(
+      {
+        email: email,
+        firstname: firstname,
+        lastname: lastname,
+        phone: phone,
+        magazine: magazine,
+        position: position,
+        adres: adres,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    ).catch((err) => {
+      throw new ApolloError(err, "USER DONT EXISTS");
+    });
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new ApolloError(
+        "User with that id do not exists ",
+        "USER DONT EXISTS"
+      );
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      phone: user.phone,
+      magazine: user.magazine,
+      position: user.position,
+      adres: user.adres,
+    };
   },
 };
 

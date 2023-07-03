@@ -4,7 +4,19 @@ type Auth {
   lastname: String!
   token: String!
   firstLogin: Boolean!
-}  
+  expiresIn: String!
+}
+
+type UserData {
+  id: ID
+  email: String!
+  firstname: String!
+  lastname: String!
+  phone: String!
+  magazine: String!
+  position: String!
+  adres: String!
+}
 
 type User {
     id: ID
@@ -15,6 +27,7 @@ type User {
     phone: String!
     magazine: String!
     position: String!
+    adres: String!
     token: String
     firstLogin: Boolean
   }

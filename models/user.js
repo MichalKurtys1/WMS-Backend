@@ -3,9 +3,8 @@ import sequelize from "../utils/db";
 
 const User = sequelize.define("user", {
   id: {
-    type: Sequelize.INTEGER,
-    autoIncrement: true,
-    allowNull: false,
+    type: Sequelize.UUID,
+    defaultValue: Sequelize.UUIDV4,
     primaryKey: true,
   },
   email: {
@@ -33,6 +32,10 @@ const User = sequelize.define("user", {
     allowNull: false,
   },
   position: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  adres: {
     type: Sequelize.STRING,
     allowNull: false,
   },

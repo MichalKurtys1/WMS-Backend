@@ -1,8 +1,12 @@
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
-const sequelize = new Sequelize("myDB", "admin", "michal2001", {
+dotenv.config();
+const url = process.env.DB_URL;
+
+const sequelize = new Sequelize("myDB", "root", "", {
   dialect: "mysql",
-  host: "inzynierka.cf6kiymaoxvp.eu-central-1.rds.amazonaws.com",
+  host: url,
 });
 
 export default sequelize;

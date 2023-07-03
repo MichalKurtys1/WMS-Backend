@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { typeDefs, resolvers } from "./graphql";
 import User from "./models/user";
 import sequelize from "./utils/db";
+import cors from "cors";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -14,13 +15,25 @@ const apolloServer = new ApolloServer({
   resolvers,
   introspection: true,
   playground: true,
+  context: async ({ req, res }) => {
+    const tokenHeader = req.headers.authorization || "";
+    const token = tokenHeader.split(" ")[1];
+    return { token };
+  },
 });
 
 // { force: true }
-
 sequelize.sync().then((res) => {
   apolloServer.start().then((res) => {
-    apolloServer.applyMiddleware({ app, path: "/graphql" });
+    apolloServer.applyMiddleware({
+      app,
+      cors: {
+        origin: ["http://localhost:3000", "https://studio.apollographql.com"],
+        credentials: true,
+        // exposedHeaders: "authorization",
+      },
+      path: "/graphql",
+    });
     app.listen({ port }, () => console.log(`Server Running`));
   });
 });
