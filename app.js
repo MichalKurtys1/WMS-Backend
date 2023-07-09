@@ -30,7 +30,6 @@ sequelize.sync().then((res) => {
       cors: {
         origin: ["http://localhost:3000", "https://studio.apollographql.com"],
         credentials: true,
-        // exposedHeaders: "authorization",
       },
       path: "/graphql",
     });
