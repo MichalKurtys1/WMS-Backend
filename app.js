@@ -5,6 +5,9 @@ import { typeDefs, resolvers } from "./graphql";
 import User from "./models/user";
 import sequelize from "./utils/db";
 import cors from "cors";
+import Supplier from "./models/supplier";
+import Client from "./models/client";
+import Deliveries from "./models/deliveries";
 
 dotenv.config();
 const port = process.env.PORT;
@@ -22,7 +25,7 @@ const apolloServer = new ApolloServer({
   },
 });
 
-// { force: true }
+//{ force: true }
 sequelize.sync().then((res) => {
   apolloServer.start().then((res) => {
     apolloServer.applyMiddleware({

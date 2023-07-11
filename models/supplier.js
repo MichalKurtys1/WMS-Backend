@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
+import Deliveries from "./deliveries";
 
 const Supplier = sequelize.define("supplier", {
   id: {
@@ -31,6 +32,13 @@ const Supplier = sequelize.define("supplier", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+});
+
+Supplier.hasMany(Deliveries, {
+  foreignKey: "supplierId",
+});
+Deliveries.belongsTo(Supplier, {
+  foreignKey: "supplierId",
 });
 
 export default Supplier;
