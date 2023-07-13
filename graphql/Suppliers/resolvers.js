@@ -13,6 +13,7 @@ const queries = {
     }
 
     const supplier = await Supplier.findAll();
+    console.log(supplier);
     return supplier;
   },
 };
