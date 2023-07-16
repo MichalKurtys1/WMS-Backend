@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
+import Orders from "./orders";
 
 const Client = sequelize.define("client", {
   id: {
@@ -35,6 +36,13 @@ const Client = sequelize.define("client", {
     type: Sequelize.STRING,
     allowNull: true,
   },
+});
+
+Client.hasMany(Orders, {
+  foreignKey: "clientId",
+});
+Orders.belongsTo(Client, {
+  foreignKey: "clientId",
 });
 
 export default Client;
