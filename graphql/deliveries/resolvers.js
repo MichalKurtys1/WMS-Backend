@@ -57,6 +57,7 @@ const mutations = {
       warehouse: deliveries.warehouse,
       comments: deliveries.comments,
       products: deliveries.products,
+      state: deliveries.state,
     };
   },
   deleteDelivery: async (root, args, context) => {
@@ -119,6 +120,7 @@ const mutations = {
       warehouse: deliveries.warehouse,
       comments: deliveries.comments,
       products: deliveries.products,
+      state: deliveries.state,
     };
   },
   getDelivery: async (root, args, context) => {
@@ -145,6 +147,7 @@ const mutations = {
       comments: deliveries.comments,
       products: deliveries.products,
       supplier: deliveries.supplier,
+      state: deliveries.state,
     };
   },
 };

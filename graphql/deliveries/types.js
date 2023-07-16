@@ -8,6 +8,7 @@ type Delivery {
   warehouse: String!
   comments: String!
   products: JSON!
+  state: String!
 }
 
 type Supplier {
@@ -30,5 +31,6 @@ type DeliveryList {
   warehouse: String!
   comments: String!
   products: JSON!
+  state: String!
 }
 `;
