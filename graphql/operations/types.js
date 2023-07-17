@@ -3,17 +3,20 @@ scalar JSON
 
 type Operation {
   id: ID!
-  deliveriesId: ID!
+  deliveriesId: ID
+  ordersId: ID
   stage: Float!
   data: JSON!
 }
 
 type OperationData {
   id: ID!
-  deliveriesId: ID!
+  deliveriesId: ID
+  ordersId: ID
   stage: Float!
   data: JSON!
   delivery: Delivery
+  order: Order
 }
 
 `;

@@ -40,11 +40,11 @@ const Orders = sequelize.define("orders", {
   },
 });
 
-// Orders.hasMany(Operations, {
-//   foreignKey: "ordersId",
-// });
-// Operations.belongsTo(Orders, {
-//   foreignKey: "ordersId",
-// });
+Orders.hasMany(Operations, {
+  foreignKey: "ordersId",
+});
+Operations.belongsTo(Orders, {
+  foreignKey: "ordersId",
+});
 
 export default Orders;

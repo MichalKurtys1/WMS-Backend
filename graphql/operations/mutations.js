@@ -1,6 +1,7 @@
 export const mutations = `
 createOperation(
-    deliveriesId: ID!
+    deliveriesId: ID
+    ordersId: ID
 ): Operation!
 updateOperation(
     operationId: ID!

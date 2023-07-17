@@ -2,6 +2,7 @@ import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
 import Deliveries from "./deliveries";
+import Orders from "./orders";
 
 const Operations = sequelize.define("operations", {
   id: {
@@ -13,6 +14,13 @@ const Operations = sequelize.define("operations", {
     type: Sequelize.UUID,
     references: {
       model: Deliveries,
+      key: "id",
+    },
+  },
+  ordersId: {
+    type: Sequelize.UUID,
+    references: {
+      model: Orders,
       key: "id",
     },
   },
