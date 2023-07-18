@@ -35,6 +35,11 @@ const Product = sequelize.define("product", {
     type: Sequelize.FLOAT,
     allowNull: false,
   },
+  availableStock: {
+    type: Sequelize.FLOAT,
+    allowNull: true,
+    defaultValue: 0,
+  },
 });
 
 export default Product;

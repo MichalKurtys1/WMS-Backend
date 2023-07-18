@@ -153,6 +153,43 @@ const mutations = {
       pricePerUnit: product.pricePerUnit,
     };
   },
+  updateAvailableStock: async (root, args, context) => {
+    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
+    if (!decodedToken) {
+      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
+    }
+
+    const { id, availableStock } = args;
+
+    const product = await Product.findByPk(id);
+    if (!product) {
+      throw new ApolloError(
+        "Product with that id do not exists ",
+        "PRODUCT DONT EXISTS"
+      );
+    }
+
+    let newAvailableStock = product.availableStock + availableStock;
+
+    if (newAvailableStock < 0) {
+      throw new ApolloError("Not enough of available stock");
+    }
+
+    await Product.update(
+      {
+        availableStock: product.availableStock + availableStock,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    ).catch((err) => {
+      throw new ApolloError(err, "PRODUCT DONT EXISTS");
+    });
+
+    return true;
+  },
 };
 
 export const resolvers = { queries, mutations };
