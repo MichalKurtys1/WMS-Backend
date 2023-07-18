@@ -1,6 +1,7 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
+import Locations from "./locations";
 
 const Product = sequelize.define("product", {
   id: {

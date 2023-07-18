@@ -3,6 +3,7 @@ import sequelize from "../utils/db";
 import Supplier from "./supplier";
 import Deliveries from "./deliveries";
 import Orders from "./orders";
+import Locations from "./locations";
 
 const Operations = sequelize.define("operations", {
   id: {
@@ -34,6 +35,13 @@ const Operations = sequelize.define("operations", {
     allowNull: false,
     defaultValue: "",
   },
+});
+
+Operations.hasMany(Locations, {
+  foreignKey: "operationId",
+});
+Locations.belongsTo(Operations, {
+  foreignKey: "operationId",
 });
 
 export default Operations;
