@@ -25,7 +25,17 @@ const mutations = {
       throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
     }
 
-    const { name, email, phone, city, street, number } = args;
+    const {
+      name,
+      email,
+      phone,
+      city,
+      street,
+      number,
+      bank,
+      accountNumber,
+      nip,
+    } = args;
 
     const supplier = await Supplier.create({
       name: name,
@@ -34,6 +44,9 @@ const mutations = {
       city: city,
       street: street,
       number: number,
+      bank: bank,
+      accountNumber: accountNumber,
+      nip: nip,
     }).catch((err) => {
       throw new ApolloError(err, "SERVER_ERROR");
     });
@@ -46,6 +59,9 @@ const mutations = {
       city: supplier.city,
       street: supplier.street,
       number: supplier.number,
+      bank: supplier.bank,
+      accountNumber: supplier.accountNumber,
+      nip: supplier.nip,
     };
   },
   deleteSupplier: async (root, args, context) => {
@@ -70,7 +86,18 @@ const mutations = {
       throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
     }
 
-    const { id, name, email, phone, city, street, number } = args;
+    const {
+      id,
+      name,
+      email,
+      phone,
+      city,
+      street,
+      number,
+      bank,
+      accountNumber,
+      nip,
+    } = args;
 
     await Supplier.update(
       {
@@ -80,6 +107,9 @@ const mutations = {
         city: city,
         street: street,
         number: number,
+        bank: bank,
+        accountNumber: accountNumber,
+        nip: nip,
       },
       {
         where: {
@@ -105,6 +135,9 @@ const mutations = {
       city: supplier.city,
       street: supplier.street,
       number: supplier.number,
+      bank: supplier.bank,
+      accountNumber: supplier.accountNumber,
+      nip: supplier.nip,
     };
   },
   getSupplier: async (root, args, context) => {
@@ -121,6 +154,7 @@ const mutations = {
         "SUPPLIER DONT EXISTS"
       );
     }
+    console.log(supplier);
     return {
       id: supplier.id,
       name: supplier.name,
@@ -129,6 +163,9 @@ const mutations = {
       city: supplier.city,
       street: supplier.street,
       number: supplier.number,
+      bank: supplier.bank,
+      accountNumber: supplier.accountNumber,
+      nip: supplier.nip,
     };
   },
 };

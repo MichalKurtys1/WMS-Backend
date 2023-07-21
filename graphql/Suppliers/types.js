@@ -7,5 +7,8 @@ type Supplier {
     city: String!
     street: String!
     number: String!
+    bank: String!
+    accountNumber: String!
+    nip: String!
   }
 `;

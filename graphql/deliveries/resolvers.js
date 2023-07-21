@@ -128,7 +128,6 @@ const mutations = {
     if (!decodedToken) {
       throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
     }
-
     const id = args.id;
     const deliveries = await Deliveries.findByPk(id, {
       include: [Supplier],

@@ -6,6 +6,9 @@ createSupplier(
     city: String!
     street: String!
     number: String!
+    bank: String!
+    accountNumber: String!
+    nip: String!
 ): Supplier!
 deleteSupplier(id: String!): Boolean!
 updateSupplier(
@@ -16,6 +19,9 @@ updateSupplier(
   city: String!
   street: String!
   number: String!
+  bank: String!
+  accountNumber: String!
+  nip: String!
   ): Supplier!
   getSupplier(id: String!): Supplier!
 `;

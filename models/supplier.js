@@ -33,6 +33,18 @@ const Supplier = sequelize.define("supplier", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  nip: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  bank: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  accountNumber: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
 });
 
 Supplier.hasMany(Deliveries, {
