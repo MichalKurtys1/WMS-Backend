@@ -2,6 +2,7 @@ export const mutations = `
 createOperation(
     deliveriesId: ID
     ordersId: ID
+    transfersId: ID
 ): Operation!
 updateOperation(
     operationId: ID!
@@ -9,14 +10,3 @@ updateOperation(
     data: JSON!
 ): Operation!
 `;
-
-// deleteDelivery(id: String!): Boolean!
-// updateDelivery(
-// id: ID!
-// supplierId: ID!
-// date: String!
-// warehouse: String!
-// comments: String!
-// products: JSON!
-// ): Delivery!
-// getDelivery(id: String!): DeliveryList!

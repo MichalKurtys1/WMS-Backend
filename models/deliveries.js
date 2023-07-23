@@ -44,6 +44,7 @@ Deliveries.hasMany(Operations, {
 });
 Operations.belongsTo(Deliveries, {
   foreignKey: "deliveriesId",
+  onDelete: "CASCADE",
 });
 
 export default Deliveries;

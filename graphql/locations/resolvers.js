@@ -78,6 +78,7 @@ const mutations = {
       numberOfProducts: location.numberOfProducts,
       posX: location.posX,
       posY: location.posY,
+      state: location.state,
     };
   },
   deleteDelivery: async (root, args, context) => {

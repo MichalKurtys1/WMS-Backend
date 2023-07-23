@@ -5,6 +5,7 @@ type Operation {
   id: ID!
   deliveriesId: ID
   ordersId: ID
+  transferId: ID
   stage: Float!
   data: JSON!
 }
@@ -13,10 +14,12 @@ type OperationData {
   id: ID!
   deliveriesId: ID
   ordersId: ID
+  transfersId: ID
   stage: Float!
   data: JSON!
   delivery: Delivery
   order: Order
+  transfer: Transfer
 }
 
 `;

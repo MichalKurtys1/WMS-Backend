@@ -36,6 +36,11 @@ const Locations = sequelize.define("locations", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  state: {
+    type: Sequelize.STRING,
+    allowNull: true,
+    defaultValue: null,
+  },
 });
 
 Product.hasMany(Locations, {
@@ -43,6 +48,7 @@ Product.hasMany(Locations, {
 });
 Locations.belongsTo(Product, {
   foreignKey: "productId",
+  onDelete: "CASCADE",
 });
 
 export default Locations;

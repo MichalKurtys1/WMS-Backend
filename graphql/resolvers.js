@@ -6,6 +6,7 @@ import { Product } from "./Product";
 import { Operations } from "./operations";
 import { Orders } from "./orders";
 import { Locations } from "./locations";
+import { Transfers } from "./transfers";
 import GraphQLJSON from "graphql-type-json";
 
 const resolvers = {
@@ -19,6 +20,7 @@ const resolvers = {
     ...Operations.resolvers.queries,
     ...Orders.resolvers.queries,
     ...Locations.resolvers.queries,
+    ...Transfers.resolvers.queries,
   },
   Mutation: {
     ...Auth.resolvers.mutations,
@@ -29,6 +31,7 @@ const resolvers = {
     ...Operations.resolvers.mutations,
     ...Orders.resolvers.mutations,
     ...Locations.resolvers.mutations,
+    ...Transfers.resolvers.mutations,
   },
 };
 

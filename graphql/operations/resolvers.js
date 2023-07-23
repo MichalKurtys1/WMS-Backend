@@ -7,6 +7,8 @@ import Supplier from "../../models/supplier";
 import Deliveries from "../../models/deliveries";
 import Operations from "../../models/operations";
 import Orders from "../../models/orders";
+import Transfers from "../../models/transfers";
+import Locations from "../../models/locations";
 
 const queries = {
   operations: async (root, args, context) => {
@@ -16,7 +18,7 @@ const queries = {
     }
 
     const operations = await Operations.findAll({
-      include: [Deliveries],
+      include: [Deliveries, Transfers, Orders],
     });
 
     return operations;
@@ -30,7 +32,7 @@ const mutations = {
       throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
     }
 
-    const { deliveriesId, ordersId } = args;
+    const { deliveriesId, ordersId, transfersId } = args;
 
     let operation;
 
@@ -53,7 +55,7 @@ const mutations = {
       ).catch((err) => {
         throw new ApolloError(err, "DELIVERY DONT EXISTS");
       });
-    } else {
+    } else if (ordersId) {
       operation = await Operations.create({
         ordersId: ordersId,
       }).catch((err) => {
@@ -72,14 +74,28 @@ const mutations = {
       ).catch((err) => {
         throw new ApolloError(err, "ORDER DONT EXISTS");
       });
+    } else {
+      operation = await Operations.create({
+        transfersId: transfersId,
+      }).catch((err) => {
+        throw new ApolloError(err, "SERVER_ERROR");
+      });
+
+      await Transfers.update(
+        {
+          state: "W trakcie",
+        },
+        {
+          where: {
+            id: transfersId,
+          },
+        }
+      ).catch((err) => {
+        throw new ApolloError(err, "ORDER DONT EXISTS");
+      });
     }
 
-    return {
-      id: operation.id,
-      deliveriesId: operation.deliveriesId,
-      stage: operation.stage,
-      data: operation.data,
-    };
+    return operation;
   },
   updateOperation: async (root, args, context) => {
     const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
@@ -105,7 +121,6 @@ const mutations = {
       });
 
       const operations = await Operations.findByPk(operationId);
-
       if (operations.deliveriesId) {
         await Deliveries.update(
           {
@@ -119,7 +134,7 @@ const mutations = {
         ).catch((err) => {
           throw new ApolloError(err, "DELIVERY DONT EXISTS");
         });
-      } else {
+      } else if (operations.ordersId) {
         await Orders.update(
           {
             state: "Zakończone",
@@ -127,6 +142,54 @@ const mutations = {
           {
             where: {
               id: operations.ordersId,
+            },
+          }
+        ).catch((err) => {
+          throw new ApolloError(err, "ORDER DONT EXISTS");
+        });
+      } else if (operations.transfersId) {
+        const parsedData = JSON.parse(data);
+
+        for (const element of parsedData) {
+          if (element.state) {
+            if (element.numberOfProducts > element.transferNumber) {
+              await Locations.update(
+                {
+                  numberOfProducts:
+                    element.numberOfProducts - element.transferNumber,
+                  state: null,
+                },
+                {
+                  where: {
+                    id: element.id,
+                  },
+                }
+              );
+            } else {
+              await Locations.destroy({
+                where: {
+                  id: element.id,
+                },
+              });
+            }
+
+            await Locations.create({
+              operationId: operationId,
+              productId: element.product.id,
+              numberOfProducts: element.transferNumber,
+              posX: element.newPosX,
+              posY: element.newPosY,
+            });
+          }
+        }
+
+        await Transfers.update(
+          {
+            state: "Zakończone",
+          },
+          {
+            where: {
+              id: operations.transfersId,
             },
           }
         ).catch((err) => {
@@ -158,10 +221,17 @@ const mutations = {
         stage: operation.stage,
         data: operation.data,
       };
-    } else {
+    } else if (operation.ordersId) {
       return {
         id: operation.id,
         ordersId: operation.ordersId,
+        stage: operation.stage,
+        data: operation.data,
+      };
+    } else {
+      return {
+        id: operation.id,
+        transfersId: operation.ordersId,
         stage: operation.stage,
         data: operation.data,
       };

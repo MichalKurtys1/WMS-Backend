@@ -43,6 +43,7 @@ Client.hasMany(Orders, {
 });
 Orders.belongsTo(Client, {
   foreignKey: "clientId",
+  onDelete: "CASCADE",
 });
 
 export default Client;

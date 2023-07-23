@@ -4,6 +4,7 @@ import Supplier from "./supplier";
 import Deliveries from "./deliveries";
 import Orders from "./orders";
 import Locations from "./locations";
+import Transfers from "./transfers";
 
 const Operations = sequelize.define("operations", {
   id: {
@@ -25,6 +26,13 @@ const Operations = sequelize.define("operations", {
       key: "id",
     },
   },
+  transfersId: {
+    type: Sequelize.UUID,
+    references: {
+      model: Transfers,
+      key: "id",
+    },
+  },
   stage: {
     type: Sequelize.FLOAT,
     allowNull: false,
@@ -42,6 +50,15 @@ Operations.hasMany(Locations, {
 });
 Locations.belongsTo(Operations, {
   foreignKey: "operationId",
+  onDelete: "CASCADE",
+});
+
+Transfers.hasMany(Operations, {
+  foreignKey: "transfersId",
+});
+Operations.belongsTo(Transfers, {
+  foreignKey: "transfersId",
+  onDelete: "CASCADE",
 });
 
 export default Operations;

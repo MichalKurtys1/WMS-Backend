@@ -7,6 +7,7 @@ import { Product } from "./Product";
 import { Operations } from "./operations";
 import { Orders } from "./orders";
 import { Locations } from "./locations";
+import { Transfers } from "./transfers";
 
 const typeDefs = gql`
   ${Auth.types}
@@ -17,6 +18,7 @@ const typeDefs = gql`
   ${Operations.types}
   ${Orders.types}
   ${Locations.types}
+  ${Transfers.types}
   
   type Query {
     ${Auth.queries}
@@ -27,6 +29,7 @@ const typeDefs = gql`
     ${Operations.queries}
     ${Orders.queries}
     ${Locations.queries}
+    ${Transfers.queries}
   }
   
   type Mutation {
@@ -38,6 +41,7 @@ const typeDefs = gql`
     ${Operations.mutations}
     ${Orders.mutations}
     ${Locations.mutations}
+    ${Transfers.mutations}
   }
 `;
 

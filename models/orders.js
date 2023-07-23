@@ -45,6 +45,7 @@ Orders.hasMany(Operations, {
 });
 Operations.belongsTo(Orders, {
   foreignKey: "ordersId",
+  onDelete: "CASCADE",
 });
 
 export default Orders;

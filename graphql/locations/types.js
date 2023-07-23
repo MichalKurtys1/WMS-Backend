@@ -6,6 +6,7 @@ type Location {
   numberOfProducts: Float!
   posX: String!
   posY: String!
+  state: String
 }
 
 
