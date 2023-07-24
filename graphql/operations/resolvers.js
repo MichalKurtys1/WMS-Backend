@@ -9,16 +9,16 @@ import Operations from "../../models/operations";
 import Orders from "../../models/orders";
 import Transfers from "../../models/transfers";
 import Locations from "../../models/locations";
+import { authCheck } from "../../utils/authCheck";
 
 const queries = {
   operations: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const operations = await Operations.findAll({
       include: [Deliveries, Transfers, Orders],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     return operations;
@@ -27,10 +27,7 @@ const queries = {
 
 const mutations = {
   createOperation: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { deliveriesId, ordersId, transfersId } = args;
 
@@ -40,7 +37,7 @@ const mutations = {
       operation = await Operations.create({
         deliveriesId: deliveriesId,
       }).catch((err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       });
 
       await Deliveries.update(
@@ -53,13 +50,13 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError(err, "DELIVERY DONT EXISTS");
+        throw new ApolloError("SERVER_ERROR");
       });
     } else if (ordersId) {
       operation = await Operations.create({
         ordersId: ordersId,
       }).catch((err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       });
 
       await Orders.update(
@@ -72,13 +69,13 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError(err, "ORDER DONT EXISTS");
+        throw new ApolloError("SERVER_ERROR");
       });
     } else {
       operation = await Operations.create({
         transfersId: transfersId,
       }).catch((err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       });
 
       await Transfers.update(
@@ -91,17 +88,14 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError(err, "ORDER DONT EXISTS");
+        throw new ApolloError("SERVER_ERROR");
       });
     }
 
     return operation;
   },
   updateOperation: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { operationId, stage, data } = args;
 
@@ -117,7 +111,7 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError(err, "OPERATION DONT EXISTS");
+        throw new ApolloError("SERVER_ERROR");
       });
 
       const operations = await Operations.findByPk(operationId);
@@ -132,7 +126,7 @@ const mutations = {
             },
           }
         ).catch((err) => {
-          throw new ApolloError(err, "DELIVERY DONT EXISTS");
+          throw new ApolloError("SERVER_ERROR");
         });
       } else if (operations.ordersId) {
         await Orders.update(
@@ -145,7 +139,7 @@ const mutations = {
             },
           }
         ).catch((err) => {
-          throw new ApolloError(err, "ORDER DONT EXISTS");
+          throw new ApolloError("SERVER_ERROR");
         });
       } else if (operations.transfersId) {
         const parsedData = JSON.parse(data);
@@ -164,12 +158,16 @@ const mutations = {
                     id: element.id,
                   },
                 }
-              );
+              ).catch((err) => {
+                throw new ApolloError("SERVER_ERROR");
+              });
             } else {
               await Locations.destroy({
                 where: {
                   id: element.id,
                 },
+              }).catch((err) => {
+                throw new ApolloError("SERVER_ERROR");
               });
             }
 
@@ -179,6 +177,8 @@ const mutations = {
               numberOfProducts: element.transferNumber,
               posX: element.newPosX,
               posY: element.newPosY,
+            }).catch((err) => {
+              throw new ApolloError("SERVER_ERROR");
             });
           }
         }
@@ -193,7 +193,7 @@ const mutations = {
             },
           }
         ).catch((err) => {
-          throw new ApolloError(err, "ORDER DONT EXISTS");
+          throw new ApolloError("SERVER_ERROR");
         });
       }
     } else {
@@ -208,11 +208,13 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError(err, "OPERATION DONT EXISTS");
+        throw new ApolloError("SERVER_ERROR");
       });
     }
 
-    const operation = await Operations.findByPk(operationId);
+    const operation = await Operations.findByPk(operationId).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
 
     if (operation.deliveriesId) {
       return {

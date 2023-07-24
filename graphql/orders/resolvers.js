@@ -6,16 +6,16 @@ import Client from "../../models/client";
 import Supplier from "../../models/supplier";
 import Deliveries from "../../models/deliveries";
 import Orders from "../../models/orders";
+import { authCheck } from "../../utils/authCheck";
 
 const queries = {
   orders: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const orders = await Orders.findAll({
       include: [Client],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     return orders;
@@ -24,10 +24,7 @@ const queries = {
 
 const mutations = {
   createOrder: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { clientId, date, warehouse, products, comments } = args;
 
@@ -35,10 +32,12 @@ const mutations = {
       where: {
         name: clientId,
       },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (!client) {
-      throw new ApolloError("CLIENT DO NOT EXISTS");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     const orders = await Orders.create({
@@ -48,24 +47,13 @@ const mutations = {
       comments,
       products,
     }).catch((err) => {
-      throw new ApolloError(err, "SERVER_ERROR");
+      throw new ApolloError("SERVER_ERROR");
     });
 
-    return {
-      id: orders.id,
-      clientId: orders.clientId,
-      date: orders.date,
-      warehouse: orders.warehouse,
-      comments: orders.comments,
-      products: orders.products,
-      state: orders.state,
-    };
+    return orders;
   },
   deleteOrder: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
     Orders.destroy({
@@ -73,15 +61,12 @@ const mutations = {
         id: id,
       },
     }).catch((err) => {
-      throw new ApolloError(err, "ORDER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
     return true;
   },
   updateOrder: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { id, clientId, date, warehouse, products, comments } = args;
 
@@ -89,10 +74,12 @@ const mutations = {
       where: {
         name: clientId,
       },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (!client) {
-      throw new ApolloError("SUPPLIER DO NOT EXISTS");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     await Orders.update(
@@ -109,47 +96,33 @@ const mutations = {
         },
       }
     ).catch((err) => {
-      throw new ApolloError(err, "ORDER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
 
-    const order = await Orders.findByPk(id);
+    const order = await Orders.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
 
-    return {
-      id: order.id,
-      clientId: order.clientId,
-      date: order.date,
-      warehouse: order.warehouse,
-      comments: order.comments,
-      products: order.products,
-      state: order.state,
-    };
+    if (!order) {
+      throw new ApolloError("INPUT_ERROR");
+    }
+
+    return order;
   },
   getOrder: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
     const orders = await Orders.findByPk(id, {
       include: [Client],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
+
     if (!orders) {
-      throw new ApolloError(
-        "Order with that id do not exists ",
-        "ORDER DONT EXISTS"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
-    return {
-      id: orders.id,
-      clientId: orders.clientId,
-      date: orders.date,
-      warehouse: orders.warehouse,
-      comments: orders.comments,
-      products: orders.products,
-      client: orders.client,
-      state: orders.state,
-    };
+    return orders;
   },
 };
 

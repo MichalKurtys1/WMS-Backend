@@ -8,15 +8,15 @@ import Deliveries from "../../models/deliveries";
 import Orders from "../../models/orders";
 import Transfers from "../../models/transfers";
 import Locations from "../../models/locations";
+import { authCheck } from "../../utils/authCheck";
 
 const queries = {
   transfers: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
-    const transfers = await Transfers.findAll();
+    const transfers = await Transfers.findAll().catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
 
     return transfers;
   },
@@ -24,10 +24,7 @@ const queries = {
 
 const mutations = {
   createTransfer: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { employee, date, data } = args;
 
@@ -36,7 +33,7 @@ const mutations = {
       date,
       data,
     }).catch((err) => {
-      throw new ApolloError(err, "SERVER_ERROR");
+      throw new ApolloError("SERVER_ERROR");
     });
 
     const parsedData = JSON.parse(data);
@@ -51,16 +48,15 @@ const mutations = {
             id: element.id,
           },
         }
-      );
+      ).catch((err) => {
+        throw new ApolloError("SERVER_ERROR");
+      });
     }
 
     return transfer;
   },
   deleteTransfer: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
 
@@ -69,16 +65,13 @@ const mutations = {
         id: id,
       },
     }).catch((err) => {
-      throw new ApolloError(err, "TRANSFER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
 
     return true;
   },
   updateTransfer: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { id, clientId, date, warehouse, products, comments } = args;
 
@@ -86,10 +79,12 @@ const mutations = {
       where: {
         name: clientId,
       },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (!client) {
-      throw new ApolloError("SUPPLIER DO NOT EXISTS");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     await Orders.update(
@@ -106,47 +101,29 @@ const mutations = {
         },
       }
     ).catch((err) => {
-      throw new ApolloError(err, "ORDER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
 
-    const order = await Orders.findByPk(id);
+    const order = await Orders.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
 
-    return {
-      id: order.id,
-      clientId: order.clientId,
-      date: order.date,
-      warehouse: order.warehouse,
-      comments: order.comments,
-      products: order.products,
-      state: order.state,
-    };
+    return order;
   },
   getTransfer: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
     const orders = await Orders.findByPk(id, {
       include: [Client],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
+
     if (!orders) {
-      throw new ApolloError(
-        "Order with that id do not exists ",
-        "ORDER DONT EXISTS"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
-    return {
-      id: orders.id,
-      clientId: orders.clientId,
-      date: orders.date,
-      warehouse: orders.warehouse,
-      comments: orders.comments,
-      products: orders.products,
-      client: orders.client,
-      state: orders.state,
-    };
+    return orders;
   },
 };
 

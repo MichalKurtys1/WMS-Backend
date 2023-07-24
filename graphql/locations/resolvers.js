@@ -7,16 +7,16 @@ import Supplier from "../../models/supplier";
 import Deliveries from "../../models/deliveries";
 import Locations from "../../models/locations";
 import Product from "../../models/product";
+import { authCheck } from "../../utils/authCheck";
 
 const queries = {
   locations: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const locations = await Locations.findAll({
       include: [Product],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     return locations;
@@ -25,10 +25,7 @@ const queries = {
 
 const mutations = {
   createLocation: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { operationId, productId, numberOfProducts, posX, posY } = args;
 
@@ -36,10 +33,12 @@ const mutations = {
       where: {
         id: productId,
       },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (!product) {
-      throw new ApolloError("PRODUCT DO NOT EXISTS");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     let location = await Locations.findOne({
@@ -47,18 +46,18 @@ const mutations = {
         operationId,
         productId,
       },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (location) {
-      location = await location
-        .update({
-          numberOfProducts,
-          posX,
-          posY,
-        })
-        .catch((err) => {
-          throw new ApolloError(err, "SERVER_ERROR");
-        });
+      location = await Locations.update({
+        numberOfProducts,
+        posX,
+        posY,
+      }).catch((err) => {
+        throw new ApolloError("SERVER_ERROR");
+      });
     } else {
       location = await Locations.create({
         operationId,
@@ -67,7 +66,7 @@ const mutations = {
         posX,
         posY,
       }).catch((err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       });
     }
 
@@ -79,96 +78,6 @@ const mutations = {
       posX: location.posX,
       posY: location.posY,
       state: location.state,
-    };
-  },
-  deleteDelivery: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
-
-    const id = args.id;
-    Deliveries.destroy({
-      where: {
-        id: id,
-      },
-    }).catch((err) => {
-      throw new ApolloError(err, "DELIVERY DONT EXISTS");
-    });
-    return true;
-  },
-  updateDelivery: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
-
-    const { id, supplierId, date, warehouse, products, comments } = args;
-
-    const supplier = await Supplier.findOne({
-      where: {
-        name: supplierId,
-      },
-    });
-
-    if (!supplier) {
-      throw new ApolloError("SUPPLIER DO NOT EXISTS");
-    }
-
-    await Deliveries.update(
-      {
-        supplierId: supplier.id,
-        date,
-        warehouse,
-        comments,
-        products,
-      },
-      {
-        where: {
-          id: id,
-        },
-      }
-    ).catch((err) => {
-      throw new ApolloError(err, "DELIVERY DONT EXISTS");
-    });
-
-    const deliveries = await Deliveries.findByPk(id);
-
-    return {
-      id: deliveries.id,
-      supplierId: deliveries.supplierId,
-      date: deliveries.date,
-      warehouse: deliveries.warehouse,
-      comments: deliveries.comments,
-      products: deliveries.products,
-      state: deliveries.state,
-    };
-  },
-  getDelivery: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
-
-    const id = args.id;
-    const deliveries = await Deliveries.findByPk(id, {
-      include: [Supplier],
-    });
-    if (!deliveries) {
-      throw new ApolloError(
-        "Delivery with that id do not exists ",
-        "DELIVERY DONT EXISTS"
-      );
-    }
-    return {
-      id: deliveries.id,
-      supplierId: deliveries.supplierId,
-      date: deliveries.date,
-      warehouse: deliveries.warehouse,
-      comments: deliveries.comments,
-      products: deliveries.products,
-      supplier: deliveries.supplier,
-      state: deliveries.state,
     };
   },
 };

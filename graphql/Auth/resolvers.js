@@ -2,8 +2,8 @@ import User from "../../models/user";
 import { ApolloError } from "apollo-server-express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-// import sendgridTransport from "nodemailer-sendgrid-transport";
 import nodemailer from "nodemailer";
+import { authCheck } from "../../utils/authCheck";
 
 const sendgridTransport = require("nodemailer-sendgrid-transport");
 
@@ -18,22 +18,19 @@ const transoprter = nodemailer.createTransport(
 
 const queries = {
   users: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
-    const users = await User.findAll();
+    const users = await User.findAll().catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
     return users;
   },
 };
 
 const mutations = {
   createUser: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const { email, firstname, lastname, phone, magazine, position, adres } =
       args;
@@ -45,7 +42,7 @@ const mutations = {
     );
 
     if (userTaken) {
-      throw new ApolloError("EMAIL TAKEN");
+      throw new ApolloError("EMAIL_TAKEN");
     }
 
     const randomPassword = Math.random().toString(36).slice(-8);
@@ -61,10 +58,7 @@ const mutations = {
         console.log("Wysłono na email");
       })
       .catch((err) => {
-        throw new ApolloError(
-          "Password cannot be send on that email",
-          "EMAIL_SEND_ERROR"
-        );
+        throw new ApolloError("EMAIL_SEND_ERROR");
       });
 
     // tymczasowe
@@ -83,40 +77,28 @@ const mutations = {
       adres: adres,
       firstLogin: true,
     }).catch((err) => {
-      throw new ApolloError(err, "SERVER_ERROR");
+      throw new ApolloError("SERVER_ERROR");
     });
 
-    return {
-      id: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      phone: user.phone,
-      magazine: user.magazine,
-      position: user.position,
-      adres: user.adres,
-    };
+    return user;
   },
   login: async (root, args) => {
     const { email, password } = args;
 
     const user = await User.findOne({ where: { email: email } }).catch(
       (err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       }
     );
 
     if (!user) {
-      throw new ApolloError(
-        "User with that email do not exists",
-        "INPUT_ERROR"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
 
     const isEqual = await bcrypt.compare(password, user.password);
 
     if (!isEqual) {
-      throw new ApolloError("Password is incorrect", "INPUT_ERROR");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     const token = jwt.sign(
@@ -130,7 +112,7 @@ const mutations = {
 
     await User.update({ token: token }, { where: { id: user.id } }).catch(
       (err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       }
     );
     return {
@@ -149,20 +131,17 @@ const mutations = {
     const user = await User.findOne({
       where: { email: decryptedToken.email },
     }).catch((err) => {
-      throw new ApolloError(err, "SERVER_ERROR");
+      throw new ApolloError("SERVER_ERROR");
     });
 
     if (!user) {
-      throw new ApolloError(
-        "User with that email do not exists",
-        "INPUT_ERROR"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
 
     const isEqual = await bcrypt.compare(oldPassword, user.password);
 
     if (!isEqual) {
-      throw new ApolloError("Password is incorrect", "INPUT_ERROR");
+      throw new ApolloError("INPUT_ERROR");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -170,40 +149,22 @@ const mutations = {
     await user
       .update({ password: hashedPassword, firstLogin: false })
       .catch((err) => {
-        throw new ApolloError(err, "SERVER_ERROR");
+        throw new ApolloError("SERVER_ERROR");
       });
     return true;
   },
   getUser: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
     const user = await User.findByPk(id);
     if (!user) {
-      throw new ApolloError(
-        "User with that id do not exists ",
-        "USER DONT EXISTS"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
-    return {
-      id: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      phone: user.phone,
-      magazine: user.magazine,
-      position: user.position,
-      adres: user.adres,
-    };
+    return user;
   },
   deleteUser: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
 
     const id = args.id;
     User.destroy({
@@ -211,15 +172,13 @@ const mutations = {
         id: id,
       },
     }).catch((err) => {
-      throw new ApolloError(err, "USER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
     return true;
   },
   updateUser: async (root, args, context) => {
-    const decodedToken = jwt.decode(context.token, "TEMPORARY_STRING");
-    if (!decodedToken) {
-      throw new ApolloError("GIVEN TOKEN DO NOT EXISTS ", "NOT AUTHENTICATED");
-    }
+    authCheck(context.token);
+
     const { id, email, firstname, lastname, phone, magazine, position, adres } =
       args;
 
@@ -239,26 +198,17 @@ const mutations = {
         },
       }
     ).catch((err) => {
-      throw new ApolloError(err, "USER DONT EXISTS");
+      throw new ApolloError("SERVER_ERROR");
     });
 
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
     if (!user) {
-      throw new ApolloError(
-        "User with that id do not exists ",
-        "USER DONT EXISTS"
-      );
+      throw new ApolloError("INPUT_ERROR");
     }
-    return {
-      id: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      phone: user.phone,
-      magazine: user.magazine,
-      position: user.position,
-      adres: user.adres,
-    };
+    return user;
   },
 };
 
