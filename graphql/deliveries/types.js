@@ -4,9 +4,9 @@ scalar JSON
 type Delivery {
   id: ID!
   supplierId: ID!
-  date: String!
+  date: String
+  expectedDate: String!
   warehouse: String!
-  comments: String!
   products: JSON!
   state: String!
 }
@@ -30,9 +30,9 @@ type DeliveryList {
   id: ID!
   supplierId: ID!
   supplier: Supplier!
-  date: String!
+  date: String
+  expectedDate: String!
   warehouse: String!
-  comments: String!
   products: JSON!
   state: String!
 }

@@ -3,4 +3,4 @@ import { mutations } from "./mutations.js";
 import { resolvers } from "./resolvers.js";
 import { types } from "./types.js";
 
-export const Operations = { queries, mutations, resolvers, types };
+export const Stock = { queries, mutations, resolvers, types };

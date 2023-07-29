@@ -1,6 +1,5 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
-import Operations from "./operations";
 
 const Transfers = sequelize.define("transfers", {
   id: {

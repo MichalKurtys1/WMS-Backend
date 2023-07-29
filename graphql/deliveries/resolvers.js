@@ -6,6 +6,8 @@ import Client from "../../models/client";
 import Supplier from "../../models/supplier";
 import Deliveries from "../../models/deliveries";
 import { authCheck } from "../../utils/authCheck";
+import Stock from "../../models/stock";
+import Product from "../../models/product";
 
 const queries = {
   deliveries: async (root, args, context) => {
@@ -25,7 +27,7 @@ const mutations = {
   createDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const { supplierId, date, warehouse, products, comments } = args;
+    const { supplierId, expectedDate, warehouse, products } = args;
 
     const supplier = await Supplier.findOne({
       where: {
@@ -41,9 +43,8 @@ const mutations = {
 
     const deliveries = await Deliveries.create({
       supplierId: supplier.id,
-      date,
+      expectedDate,
       warehouse,
-      comments,
       products,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
@@ -53,8 +54,60 @@ const mutations = {
   },
   deleteDelivery: async (root, args, context) => {
     authCheck(context.token);
-
     const id = args.id;
+    const delivery = await Deliveries.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+    let products = JSON.parse(JSON.parse(delivery.products));
+    const stock = await Stock.findAll();
+    for (const item of stock) {
+      const data = await Product.findByPk(item.productId);
+      for (const innerItem of products) {
+        if (
+          innerItem.product.includes(data.name) ||
+          innerItem.product.includes(data.type) ||
+          innerItem.product.includes(data.capacity)
+        ) {
+          const newOrdered =
+            parseInt(item.ordered) - parseInt(innerItem.quantity);
+          console.log(
+            item.ordered +
+              "----" +
+              innerItem.quantity +
+              "-----------" +
+              newOrdered
+          );
+          if (newOrdered <= 0) {
+            await Stock.update(
+              {
+                ordered: 0,
+              },
+              {
+                where: {
+                  id: item.id,
+                },
+              }
+            ).catch((err) => {
+              throw new ApolloError("SERVER_ERROR");
+            });
+          } else {
+            await Stock.update(
+              {
+                ordered: newOrdered,
+              },
+              {
+                where: {
+                  id: item.id,
+                },
+              }
+            ).catch((err) => {
+              throw new ApolloError("SERVER_ERROR");
+            });
+          }
+        }
+      }
+    }
+
     Deliveries.destroy({
       where: {
         id: id,
@@ -68,7 +121,15 @@ const mutations = {
   updateDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, supplierId, date, warehouse, products, comments } = args;
+    const {
+      id,
+      supplierId,
+      date,
+      expectedDate,
+      warehouse,
+      products,
+      comments,
+    } = args;
 
     const supplier = await Supplier.findOne({
       where: {
@@ -86,6 +147,7 @@ const mutations = {
       {
         supplierId: supplier.id,
         date,
+        expectedDate,
         warehouse,
         comments,
         products,
@@ -118,6 +180,91 @@ const mutations = {
     if (!deliveries) {
       throw new ApolloError("INPUT_ERROR");
     }
+    return deliveries;
+  },
+  updateState: async (root, args, context) => {
+    authCheck(context.token);
+    const { id, state } = args;
+
+    try {
+      await Deliveries.update(
+        { state },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+
+      const deliveries = await Deliveries.findByPk(id);
+
+      if (state === "Rozlokowano") {
+        let products = JSON.parse(JSON.parse(deliveries.products));
+
+        const stock = await Stock.findAll();
+
+        for (const item of stock) {
+          const data = await Product.findByPk(item.productId);
+
+          for (const innerItem of products) {
+            if (
+              innerItem.product.includes(data.name) ||
+              innerItem.product.includes(data.type) ||
+              innerItem.product.includes(data.capacity)
+            ) {
+              const newTotalQuantity =
+                parseInt(item.totalQuantity) + parseInt(innerItem.delivered);
+              const newOrdered =
+                parseInt(item.ordered) - parseInt(innerItem.quantity);
+
+              await Stock.update(
+                {
+                  totalQuantity: newTotalQuantity,
+                  ordered: newOrdered,
+                },
+                {
+                  where: {
+                    id: item.id,
+                  },
+                }
+              );
+            }
+          }
+        }
+      }
+
+      return deliveries;
+    } catch (error) {
+      if (error.name === "SequelizeDatabaseError") {
+        throw new ApolloError("DATABASE_ERROR");
+      } else {
+        throw new ApolloError("SERVER_ERROR");
+      }
+    }
+  },
+
+  updateValues: async (root, args, context) => {
+    authCheck(context.token);
+
+    const { id, products } = args;
+
+    await Deliveries.update(
+      {
+        products: products,
+      },
+      {
+        where: {
+          id: id,
+        },
+      }
+    ).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    const deliveries = await Deliveries.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
     return deliveries;
   },
 };

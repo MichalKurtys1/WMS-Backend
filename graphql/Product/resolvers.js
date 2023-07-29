@@ -119,39 +119,6 @@ const mutations = {
     }
     return product;
   },
-  updateAvailableStock: async (root, args, context) => {
-    authCheck(context.token);
-
-    const { id, availableStock } = args;
-
-    const product = await Product.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-    if (!product) {
-      throw new ApolloError("INPUT_ERROR");
-    }
-
-    let newAvailableStock = product.availableStock + availableStock;
-
-    if (newAvailableStock < 0) {
-      throw new ApolloError("INPUT_ERROR");
-    }
-
-    await Product.update(
-      {
-        availableStock: product.availableStock + availableStock,
-      },
-      {
-        where: {
-          id: id,
-        },
-      }
-    ).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    return true;
-  },
 };
 
 export const resolvers = { queries, mutations };

@@ -7,7 +7,6 @@ export const types = `
     capacity: String!
     unit: String!
     pricePerUnit: Float!
-    availableStock: Float!
   }
 
   type ProductData {
@@ -19,6 +18,5 @@ export const types = `
     unit: String!
     pricePerUnit: Float!
     supplier: Supplier!
-    availableStock: Float!
   }
 `;

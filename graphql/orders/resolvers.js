@@ -26,7 +26,7 @@ const mutations = {
   createOrder: async (root, args, context) => {
     authCheck(context.token);
 
-    const { clientId, date, warehouse, products, comments } = args;
+    const { clientId, expectedDate, warehouse, products, comments } = args;
 
     const client = await Client.findOne({
       where: {
@@ -42,9 +42,8 @@ const mutations = {
 
     const orders = await Orders.create({
       clientId: client.id,
-      date,
+      expectedDate,
       warehouse,
-      comments,
       products,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
@@ -68,7 +67,8 @@ const mutations = {
   updateOrder: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, clientId, date, warehouse, products, comments } = args;
+    const { id, clientId, date, expectedDate, warehouse, products, comments } =
+      args;
 
     const client = await Client.findOne({
       where: {
@@ -86,8 +86,8 @@ const mutations = {
       {
         clientId: client.id,
         date,
+        expectedDate,
         warehouse,
-        comments,
         products,
       },
       {

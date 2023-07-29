@@ -1,7 +1,6 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
-import Operations from "./operations";
 
 const Deliveries = sequelize.define("deliveries", {
   id: {
@@ -18,33 +17,26 @@ const Deliveries = sequelize.define("deliveries", {
   },
   date: {
     type: Sequelize.DATE,
+    allowNull: true,
+    defaultValue: null,
+  },
+  expectedDate: {
+    type: Sequelize.DATE,
     allowNull: false,
   },
   warehouse: {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  comments: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   state: {
     type: Sequelize.STRING,
-    defaultValue: "Zlecone",
+    defaultValue: "Zamówiono",
     allowNull: true,
   },
   products: {
     type: Sequelize.JSON,
     allowNull: false,
   },
-});
-
-Deliveries.hasMany(Operations, {
-  foreignKey: "deliveriesId",
-});
-Operations.belongsTo(Deliveries, {
-  foreignKey: "deliveriesId",
-  onDelete: "CASCADE",
 });
 
 export default Deliveries;

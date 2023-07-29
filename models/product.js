@@ -1,7 +1,8 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
-import Locations from "./locations";
+import Locations from "./stock";
+import Stock from "./stock";
 
 const Product = sequelize.define("product", {
   id: {
@@ -36,11 +37,14 @@ const Product = sequelize.define("product", {
     type: Sequelize.FLOAT,
     allowNull: false,
   },
-  availableStock: {
-    type: Sequelize.FLOAT,
-    allowNull: true,
-    defaultValue: 0,
-  },
+});
+
+Product.hasMany(Stock, {
+  foreignKey: "productId",
+});
+Stock.belongsTo(Product, {
+  foreignKey: "productId",
+  onDelete: "CASCADE",
 });
 
 export default Product;

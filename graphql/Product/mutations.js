@@ -18,5 +18,4 @@ updateProduct(
   pricePerUnit: Float!
   ): Product!
   getProduct(id: String!): Product!
-  updateAvailableStock(id: String! availableStock: Float!): Boolean!
 `;

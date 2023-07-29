@@ -1,7 +1,6 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
-import Operations from "./operations";
 import Client from "./client";
 
 const Orders = sequelize.define("orders", {
@@ -19,13 +18,14 @@ const Orders = sequelize.define("orders", {
   },
   date: {
     type: Sequelize.DATE,
+    allowNull: true,
+    defaultValue: null,
+  },
+  expectedDate: {
+    type: Sequelize.DATE,
     allowNull: false,
   },
   warehouse: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
-  comments: {
     type: Sequelize.STRING,
     allowNull: false,
   },
@@ -38,14 +38,6 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.JSON,
     allowNull: false,
   },
-});
-
-Orders.hasMany(Operations, {
-  foreignKey: "ordersId",
-});
-Operations.belongsTo(Orders, {
-  foreignKey: "ordersId",
-  onDelete: "CASCADE",
 });
 
 export default Orders;

@@ -4,9 +4,9 @@ scalar JSON
 type Order {
   id: ID!
   clientId: ID!
-  date: String!
+  date: String
+  expectedDate: String!
   warehouse: String!
-  comments: String!
   products: JSON!
   state: String!
 }
@@ -28,9 +28,9 @@ type OrderList {
   id: ID!
   clientId: ID!
   client: Client!
-  date: String!
+  date: String
+  expectedDate: String!
   warehouse: String!
-  comments: String!
   products: JSON!
   state: String!
 }

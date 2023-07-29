@@ -3,10 +3,8 @@ import { Client } from "./Client";
 import { Supplier } from "./Suppliers";
 import { Deliveries } from "./deliveries";
 import { Product } from "./Product";
-import { Operations } from "./operations";
 import { Orders } from "./orders";
-import { Locations } from "./locations";
-import { Transfers } from "./transfers";
+import { Stock } from "./stock";
 import GraphQLJSON from "graphql-type-json";
 
 const resolvers = {
@@ -17,10 +15,8 @@ const resolvers = {
     ...Supplier.resolvers.queries,
     ...Deliveries.resolvers.queries,
     ...Product.resolvers.queries,
-    ...Operations.resolvers.queries,
     ...Orders.resolvers.queries,
-    ...Locations.resolvers.queries,
-    ...Transfers.resolvers.queries,
+    ...Stock.resolvers.queries,
   },
   Mutation: {
     ...Auth.resolvers.mutations,
@@ -28,10 +24,8 @@ const resolvers = {
     ...Supplier.resolvers.mutations,
     ...Deliveries.resolvers.mutations,
     ...Product.resolvers.mutations,
-    ...Operations.resolvers.mutations,
     ...Orders.resolvers.mutations,
-    ...Locations.resolvers.mutations,
-    ...Transfers.resolvers.mutations,
+    ...Stock.resolvers.mutations,
   },
 };
 
