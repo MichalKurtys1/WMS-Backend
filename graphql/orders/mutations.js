@@ -15,4 +15,6 @@ updateOrder(
   products: JSON!
   ): Order!
   getOrder(id: String!): OrderList!
+  updateOrderState(id: String! state: String!): Order!
+  updateOrderProducts(id: String! products: JSON!): Order!
 `;

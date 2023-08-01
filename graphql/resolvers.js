@@ -5,6 +5,8 @@ import { Deliveries } from "./deliveries";
 import { Product } from "./Product";
 import { Orders } from "./orders";
 import { Stock } from "./stock";
+import { Shipping } from "./shipping";
+import { orderShipments } from "./ordersShipments";
 import GraphQLJSON from "graphql-type-json";
 
 const resolvers = {
@@ -17,6 +19,8 @@ const resolvers = {
     ...Product.resolvers.queries,
     ...Orders.resolvers.queries,
     ...Stock.resolvers.queries,
+    ...Shipping.resolvers.queries,
+    ...orderShipments.resolvers.queries,
   },
   Mutation: {
     ...Auth.resolvers.mutations,
@@ -26,6 +30,8 @@ const resolvers = {
     ...Product.resolvers.mutations,
     ...Orders.resolvers.mutations,
     ...Stock.resolvers.mutations,
+    ...Shipping.resolvers.mutations,
+    ...orderShipments.resolvers.mutations,
   },
 };
 

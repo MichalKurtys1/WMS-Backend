@@ -216,10 +216,12 @@ const mutations = {
                 parseInt(item.totalQuantity) + parseInt(innerItem.delivered);
               const newOrdered =
                 parseInt(item.ordered) - parseInt(innerItem.quantity);
-
+              const newAvailableStock =
+                parseInt(item.availableStock) + parseInt(innerItem.quantity);
               await Stock.update(
                 {
                   totalQuantity: newTotalQuantity,
+                  availableStock: newAvailableStock,
                   ordered: newOrdered,
                 },
                 {

@@ -1,38 +1,32 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
-import Shipping from "./shipping";
+import Deliveries from "./deliveries";
 
-const Deliveries = sequelize.define("deliveries", {
+const Shipping = sequelize.define("shipping", {
   id: {
     type: Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
     primaryKey: true,
   },
-  supplierId: {
+  orderId: {
     type: Sequelize.UUID,
     references: {
-      model: Supplier,
+      model: Deliveries,
       key: "id",
     },
   },
-  date: {
-    type: Sequelize.DATE,
-    allowNull: true,
-    defaultValue: null,
-  },
-  expectedDate: {
-    type: Sequelize.DATE,
-    allowNull: false,
-  },
-  warehouse: {
+  totalWeight: {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  state: {
+  palletSize: {
     type: Sequelize.STRING,
-    defaultValue: "Zamówiono",
-    allowNull: true,
+    allowNull: false,
+  },
+  palletNumber: {
+    type: Sequelize.STRING,
+    allowNull: false,
   },
   products: {
     type: Sequelize.JSON,
@@ -40,4 +34,4 @@ const Deliveries = sequelize.define("deliveries", {
   },
 });
 
-export default Deliveries;
+export default Shipping;

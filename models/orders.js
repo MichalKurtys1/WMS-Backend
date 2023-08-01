@@ -2,6 +2,7 @@ import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
 import Client from "./client";
+import Shipping from "./shipping";
 
 const Orders = sequelize.define("orders", {
   id: {
@@ -31,13 +32,21 @@ const Orders = sequelize.define("orders", {
   },
   state: {
     type: Sequelize.STRING,
-    defaultValue: "Zlecone",
+    defaultValue: "Zamówiono",
     allowNull: true,
   },
   products: {
     type: Sequelize.JSON,
     allowNull: false,
   },
+});
+
+Orders.hasMany(Shipping, {
+  foreignKey: "orderId",
+});
+Shipping.belongsTo(Orders, {
+  foreignKey: "orderId",
+  onDelete: "CASCADE",
 });
 
 export default Orders;

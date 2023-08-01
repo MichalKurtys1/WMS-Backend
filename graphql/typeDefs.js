@@ -6,6 +6,8 @@ import { Deliveries } from "./deliveries";
 import { Product } from "./Product";
 import { Orders } from "./orders";
 import { Stock } from "./stock";
+import { Shipping } from "./shipping";
+import { orderShipments } from "./ordersShipments";
 
 const typeDefs = gql`
   ${Auth.types}
@@ -15,6 +17,8 @@ const typeDefs = gql`
   ${Product.types}
   ${Orders.types}
   ${Stock.types}
+  ${Shipping.types}
+  ${orderShipments.types}
   
   type Query {
     ${Auth.queries}
@@ -24,6 +28,8 @@ const typeDefs = gql`
     ${Product.queries}
     ${Orders.queries}
     ${Stock.queries}
+    ${Shipping.queries}
+    ${orderShipments.queries}
   }
   
   type Mutation {
@@ -34,6 +40,8 @@ const typeDefs = gql`
     ${Product.mutations}
     ${Orders.mutations}
     ${Stock.mutations}
+    ${Shipping.mutations}
+    ${orderShipments.mutations}
   }
 `;
 

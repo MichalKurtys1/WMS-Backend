@@ -125,18 +125,33 @@ const mutations = {
         throw new ApolloError("SERVER_ERROR2");
       });
     } else {
-      await Stock.update(
-        {
-          ordered,
-        },
-        {
-          where: {
-            id: id,
+      if (ordered) {
+        await Stock.update(
+          {
+            ordered,
           },
-        }
-      ).catch((err) => {
-        throw new ApolloError("SERVER_ERROR2");
-      });
+          {
+            where: {
+              id: id,
+            },
+          }
+        ).catch((err) => {
+          throw new ApolloError("SERVER_ERROR2");
+        });
+      } else {
+        await Stock.update(
+          {
+            availableStock,
+          },
+          {
+            where: {
+              id: id,
+            },
+          }
+        ).catch((err) => {
+          throw new ApolloError("SERVER_ERROR2");
+        });
+      }
     }
 
     const stock = await Stock.findByPk(id).catch((err) => {
