@@ -99,10 +99,10 @@ const mutations = {
     if (productId) {
       const product = await Product.findOne({
         where: {
-          name: productId,
+          id: productId,
         },
       }).catch((err) => {
-        throw new ApolloError("SERVER_ERROR3");
+        throw new ApolloError("SERVER_ERROR");
       });
 
       if (!product) {
@@ -122,13 +122,13 @@ const mutations = {
           },
         }
       ).catch((err) => {
-        throw new ApolloError("SERVER_ERROR2");
+        throw new ApolloError("SERVER_ERROR");
       });
     } else {
-      if (ordered) {
+      if (ordered === 0 || ordered) {
         await Stock.update(
           {
-            ordered,
+            ordered: ordered,
           },
           {
             where: {
@@ -136,7 +136,7 @@ const mutations = {
             },
           }
         ).catch((err) => {
-          throw new ApolloError("SERVER_ERROR2");
+          throw new ApolloError("SERVER_ERROR");
         });
       } else {
         await Stock.update(
@@ -149,13 +149,13 @@ const mutations = {
             },
           }
         ).catch((err) => {
-          throw new ApolloError("SERVER_ERROR2");
+          throw new ApolloError("SERVER_ERROR");
         });
       }
     }
 
     const stock = await Stock.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR1");
+      throw new ApolloError("SERVER_ERROR");
     });
     if (!stock) {
       throw new ApolloError("INPUT_ERROR");

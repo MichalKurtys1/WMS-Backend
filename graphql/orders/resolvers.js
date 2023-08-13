@@ -55,8 +55,55 @@ const mutations = {
   },
   deleteOrder: async (root, args, context) => {
     authCheck(context.token);
-
     const id = args.id;
+
+    const order = await Orders.findByPk(id).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+    let products = JSON.parse(JSON.parse(order.products));
+    const stock = await Stock.findAll();
+    for (const item of stock) {
+      const data = await Product.findByPk(item.productId);
+      for (const innerItem of products) {
+        if (
+          innerItem.product.includes(data.name) ||
+          innerItem.product.includes(data.type) ||
+          innerItem.product.includes(data.capacity)
+        ) {
+          const newOrdered =
+            parseInt(item.availableStock) + parseInt(innerItem.quantity);
+
+          if (newOrdered <= 0) {
+            await Stock.update(
+              {
+                availableStock: 0,
+              },
+              {
+                where: {
+                  id: item.id,
+                },
+              }
+            ).catch((err) => {
+              throw new ApolloError("SERVER_ERROR");
+            });
+          } else {
+            await Stock.update(
+              {
+                availableStock: newOrdered,
+              },
+              {
+                where: {
+                  id: item.id,
+                },
+              }
+            ).catch((err) => {
+              throw new ApolloError("SERVER_ERROR");
+            });
+          }
+        }
+      }
+    }
+
     Orders.destroy({
       where: {
         id: id,

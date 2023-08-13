@@ -207,6 +207,7 @@ const mutations = {
           const data = await Product.findByPk(item.productId);
 
           for (const innerItem of products) {
+            console.log(innerItem);
             if (
               innerItem.product.includes(data.name) ||
               innerItem.product.includes(data.type) ||
@@ -217,7 +218,15 @@ const mutations = {
               const newOrdered =
                 parseInt(item.ordered) - parseInt(innerItem.quantity);
               const newAvailableStock =
-                parseInt(item.availableStock) + parseInt(innerItem.quantity);
+                parseInt(item.availableStock) + parseInt(innerItem.delivered);
+
+              if (
+                newTotalQuantity < 0 ||
+                newOrdered < 0 ||
+                newAvailableStock < 0
+              ) {
+                throw new ApolloError("SERVER_ERROR");
+              }
               await Stock.update(
                 {
                   totalQuantity: newTotalQuantity,
