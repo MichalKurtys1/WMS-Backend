@@ -8,6 +8,7 @@ import { Orders } from "./orders";
 import { Stock } from "./stock";
 import { Shipping } from "./shipping";
 import { orderShipments } from "./ordersShipments";
+import { Files } from "../graphql/Files/index";
 
 const typeDefs = gql`
   ${Auth.types}
@@ -19,6 +20,7 @@ const typeDefs = gql`
   ${Stock.types}
   ${Shipping.types}
   ${orderShipments.types}
+  ${Files.types}
   
   type Query {
     ${Auth.queries}
@@ -30,6 +32,7 @@ const typeDefs = gql`
     ${Stock.queries}
     ${Shipping.queries}
     ${orderShipments.queries}
+    ${Files.queries}
   }
   
   type Mutation {
@@ -42,6 +45,7 @@ const typeDefs = gql`
     ${Stock.mutations}
     ${Shipping.mutations}
     ${orderShipments.mutations}
+    ${Files.mutations}
   }
 `;
 

@@ -1,5 +1,6 @@
 export const types = `
 scalar JSON
+scalar Upload
 
 type Order {
   id: ID!
