@@ -8,5 +8,6 @@ type orderShipment {
     deliveryDate: String!
     warehouse: String!
     orders: JSON!
+    state: String!
   }
 `;

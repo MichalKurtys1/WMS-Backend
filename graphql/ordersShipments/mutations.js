@@ -7,4 +7,5 @@ createOrderShipment(
   orders: JSON!
 ): orderShipment!
 deleteOrderShipment(id: String!): Boolean!
+updateOrderShipmentState(id: String! state: String!): orderShipment!
 `;

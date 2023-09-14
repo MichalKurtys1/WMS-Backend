@@ -57,6 +57,27 @@ const mutations = {
       });
     return true;
   },
+  updateOrderShipmentState: async (root, args, context) => {
+    authCheck(context.token);
+    const { id, state } = args;
+
+    try {
+      await ordersShipments.update(
+        { state },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+
+      const shipment = await ordersShipments.findByPk(id);
+
+      return shipment;
+    } catch (error) {
+      throw new ApolloError("SERVER_ERROR");
+    }
+  },
 };
 
 export const resolvers = { queries, mutations };

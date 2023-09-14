@@ -86,6 +86,27 @@ const getFile = async (filename) => {
   }
 };
 
+const deleteFile = async (filename) => {
+  try {
+    const storage = await storageConnection();
+    await storage.ready;
+
+    const folder = Object.values(storage.files).find(
+      (file) => file.name === "inzynierka"
+    );
+
+    const file = Object.values(folder.children).find(
+      (file) => file.name === filename
+    );
+
+    await file.delete();
+    await storage.close;
+    return;
+  } catch (error) {
+    throw new ApolloError("GET_FILE_ERROR");
+  }
+};
+
 const queries = {
   files: async (root, args, context) => {
     authCheck(context.token);
@@ -122,6 +143,18 @@ const mutations = {
       mimetype,
       encoding,
     } = await file;
+
+    const fileExists = await Files.findOne({
+      where: {
+        filename: filename,
+      },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    if (fileExists) {
+      throw new ApolloError("FILENAME_TAKEN");
+    }
 
     const delivery = await Deliveries.findByPk(id, {
       include: [Supplier],
@@ -200,6 +233,21 @@ const mutations = {
       throw new ApolloError("FILE_DOWNLOAD_ERROR");
     }
     return `http://localhost:3001/${filename}`;
+  },
+  fileDelete: async (root, args, context) => {
+    authCheck(context.token);
+    const { filename } = args;
+    const file = Files.destroy({
+      where: {
+        filename: filename,
+      },
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    deleteFile(filename);
+
+    return true;
   },
 };
 

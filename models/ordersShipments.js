@@ -29,6 +29,11 @@ const ordersShipments = sequelize.define("ordersShipments", {
     type: Sequelize.JSON,
     allowNull: false,
   },
+  state: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: "Zlecone",
+  },
 });
 
 export default ordersShipments;
