@@ -2,6 +2,7 @@ export const types = `
 type Auth {
   firstname: String!
   lastname: String!
+  position: String!
   token: String!
   firstLogin: Boolean!
   expiresIn: String!

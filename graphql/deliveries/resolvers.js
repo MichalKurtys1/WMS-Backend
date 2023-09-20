@@ -187,27 +187,16 @@ const mutations = {
     const { id, state } = args;
 
     try {
-      await Deliveries.update(
-        { state },
-        {
-          where: {
-            id: id,
-          },
-        }
-      );
-
       const deliveries = await Deliveries.findByPk(id);
 
       if (state === "Rozlokowano") {
         let products = JSON.parse(JSON.parse(deliveries.products));
-
         const stock = await Stock.findAll();
 
         for (const item of stock) {
           const data = await Product.findByPk(item.productId);
 
           for (const innerItem of products) {
-            console.log(innerItem);
             if (
               innerItem.product.includes(data.name) ||
               innerItem.product.includes(data.type) ||
@@ -220,18 +209,11 @@ const mutations = {
               const newAvailableStock =
                 parseInt(item.availableStock) + parseInt(innerItem.delivered);
 
-              if (
-                newTotalQuantity < 0 ||
-                newOrdered < 0 ||
-                newAvailableStock < 0
-              ) {
-                throw new ApolloError("SERVER_ERROR");
-              }
               await Stock.update(
                 {
-                  totalQuantity: newTotalQuantity,
-                  availableStock: newAvailableStock,
-                  ordered: newOrdered,
+                  totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+                  availableStock: newAvailableStock < 0 ? 0 : newAvailableStock,
+                  ordered: newOrdered < 0 ? 0 : newOrdered,
                 },
                 {
                   where: {
@@ -243,6 +225,15 @@ const mutations = {
           }
         }
       }
+
+      await Deliveries.update(
+        { state },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
 
       return deliveries;
     } catch (error) {

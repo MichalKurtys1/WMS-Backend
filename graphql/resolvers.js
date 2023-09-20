@@ -10,6 +10,7 @@ import { orderShipments } from "./ordersShipments";
 import GraphQLJSON from "graphql-type-json";
 import { GraphQLUpload } from "graphql-upload-minimal";
 import { Files } from "../graphql/Files/index";
+import { Calendar } from "./Calendar";
 
 const resolvers = {
   JSON: GraphQLJSON,
@@ -25,6 +26,7 @@ const resolvers = {
     ...Shipping.resolvers.queries,
     ...orderShipments.resolvers.queries,
     ...Files.resolvers.queries,
+    ...Calendar.resolvers.queries,
   },
   Mutation: {
     ...Auth.resolvers.mutations,
@@ -37,6 +39,7 @@ const resolvers = {
     ...Shipping.resolvers.mutations,
     ...orderShipments.resolvers.mutations,
     ...Files.resolvers.mutations,
+    ...Calendar.resolvers.mutations,
   },
 };
 

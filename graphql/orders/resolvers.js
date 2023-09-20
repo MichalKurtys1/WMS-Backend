@@ -191,43 +191,6 @@ const mutations = {
 
       const orders = await Orders.findByPk(id);
 
-      // if (state === "Rozlokowano") {
-      //   let products = JSON.parse(JSON.parse(orders.products));
-
-      //   const stock = await Stock.findAll();
-
-      //   for (const item of stock) {
-      //     const data = await Product.findByPk(item.productId);
-
-      //     for (const innerItem of products) {
-      //       if (
-      //         innerItem.product.includes(data.name) ||
-      //         innerItem.product.includes(data.type) ||
-      //         innerItem.product.includes(data.capacity)
-      //       ) {
-      //         const newTotalQuantity =
-      //           parseInt(item.totalQuantity) + parseInt(innerItem.delivered);
-      //         const newOrdered =
-      //           parseInt(item.ordered) - parseInt(innerItem.quantity);
-      //         const newAvailableStock =
-      //           parseInt(item.availableStock) + parseInt(innerItem.quantity);
-      //         await Stock.update(
-      //           {
-      //             totalQuantity: newTotalQuantity,
-      //             availableStock: newAvailableStock,
-      //             ordered: newOrdered,
-      //           },
-      //           {
-      //             where: {
-      //               id: item.id,
-      //             },
-      //           }
-      //         );
-      //       }
-      //     }
-      //   }
-      // }
-
       return orders;
     } catch (error) {
       if (error.name === "SequelizeDatabaseError") {

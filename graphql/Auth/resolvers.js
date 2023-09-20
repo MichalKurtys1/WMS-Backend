@@ -118,6 +118,7 @@ const mutations = {
     return {
       firstname: user.firstname,
       lastname: user.lastname,
+      position: user.position,
       token: token,
       firstLogin: user.firstLogin,
       expiresIn: "2h",

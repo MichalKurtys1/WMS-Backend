@@ -128,7 +128,7 @@ const mutations = {
       if (ordered === 0 || ordered) {
         await Stock.update(
           {
-            ordered: ordered,
+            ordered: ordered ? ordered : 0,
           },
           {
             where: {
@@ -141,7 +141,7 @@ const mutations = {
       } else {
         await Stock.update(
           {
-            availableStock,
+            availableStock: availableStock ? availableStock : 0,
           },
           {
             where: {

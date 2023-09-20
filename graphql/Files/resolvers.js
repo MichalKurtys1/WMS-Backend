@@ -14,6 +14,13 @@ import Orders from "../../models/orders";
 import Deliveries from "../../models/deliveries";
 import OrdersShipments from "../../models/ordersShipments";
 
+// -----
+process.on("uncaughtException", function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
+// -----
+
 dotenv.config();
 const EMAIL = process.env.MEGA_EMAIL;
 const PASSWORD = process.env.MEGA_PASSWORD;
