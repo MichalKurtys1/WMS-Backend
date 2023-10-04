@@ -17,6 +17,10 @@ const Orders = sequelize.define("orders", {
       key: "id",
     },
   },
+  orderID: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   date: {
     type: Sequelize.DATE,
     allowNull: true,
@@ -26,13 +30,14 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.DATE,
     allowNull: false,
   },
-  warehouse: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   state: {
     type: Sequelize.STRING,
     defaultValue: "Zamówiono",
+    allowNull: true,
+  },
+  transportType: {
+    type: Sequelize.STRING,
+    defaultValue: "-",
     allowNull: true,
   },
   products: {

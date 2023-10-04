@@ -14,7 +14,6 @@ type UserData {
   firstname: String!
   lastname: String!
   phone: String!
-  magazine: String!
   position: String!
   adres: String!
 }
@@ -26,7 +25,6 @@ type User {
     firstname: String!
     lastname: String!
     phone: String!
-    magazine: String!
     position: String!
     adres: String!
     token: String

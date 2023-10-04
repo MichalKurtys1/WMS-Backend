@@ -25,10 +25,6 @@ const Deliveries = sequelize.define("deliveries", {
     type: Sequelize.DATE,
     allowNull: false,
   },
-  warehouse: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   state: {
     type: Sequelize.STRING,
     defaultValue: "Zamówiono",

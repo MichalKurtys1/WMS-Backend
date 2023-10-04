@@ -27,10 +27,6 @@ const User = sequelize.define("user", {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  magazine: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   position: {
     type: Sequelize.STRING,
     allowNull: false,

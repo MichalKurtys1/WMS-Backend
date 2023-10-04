@@ -38,45 +38,12 @@ const mutations = {
       throw new ApolloError("INPUT_ERROR");
     }
 
-    const exists = await Stock.findOne({
-      where: {
-        productId: product.id,
-      },
+    const stock = await Stock.create({
+      productId: product.id,
     }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR2");
+      throw new ApolloError("SERVER_ERROR");
     });
-
-    if (exists) {
-      let newValue = exists.ordered + ordered;
-      await Stock.update(
-        {
-          ordered: newValue,
-        },
-        {
-          where: {
-            productId: product.id,
-          },
-        }
-      ).catch((err) => {
-        throw new ApolloError("SERVER_ERROR");
-      });
-
-      const stock = await Stock.findOne({
-        where: {
-          productId: product.id,
-        },
-      });
-
-      return stock;
-    } else {
-      const stock = await Stock.create({
-        productId: product.id,
-        ordered,
-      }).catch((err) => {
-        throw new ApolloError("SERVER_ERROR");
-      });
-      return stock;
-    }
+    return stock;
   },
   deleteStock: async (root, args, context) => {
     authCheck(context.token);
@@ -162,7 +129,7 @@ const mutations = {
     }
     return stock;
   },
-  getProduct: async (root, args, context) => {
+  getStock: async (root, args, context) => {
     authCheck(context.token);
 
     const id = args.id;

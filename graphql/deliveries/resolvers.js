@@ -27,7 +27,7 @@ const mutations = {
   createDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const { supplierId, expectedDate, warehouse, products } = args;
+    const { supplierId, expectedDate, products } = args;
 
     const supplier = await Supplier.findOne({
       where: {
@@ -44,10 +44,47 @@ const mutations = {
     const deliveries = await Deliveries.create({
       supplierId: supplier.id,
       expectedDate,
-      warehouse,
       products,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
+    });
+
+    const productList = JSON.parse(products);
+    const DBProducts = await Product.findAll().catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    productList.forEach(async (item) => {
+      const product = DBProducts.find(
+        (product) =>
+          item.product.includes(product.name) &&
+          item.product.includes(product.type) &&
+          item.product.includes(product.capacity)
+      );
+
+      const exists = await Stock.findOne({
+        where: {
+          productId: product.id,
+        },
+      }).catch((err) => {
+        throw new ApolloError("SERVER_ERROR");
+      });
+
+      if (exists) {
+        let newValue = exists.ordered + parseInt(item.quantity);
+        await Stock.update(
+          {
+            ordered: newValue,
+          },
+          {
+            where: {
+              productId: product.id,
+            },
+          }
+        ).catch((err) => {
+          throw new ApolloError("SERVER_ERROR");
+        });
+      }
     });
 
     return deliveries;
@@ -121,15 +158,7 @@ const mutations = {
   updateDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const {
-      id,
-      supplierId,
-      date,
-      expectedDate,
-      warehouse,
-      products,
-      comments,
-    } = args;
+    const { id, supplierId, date, expectedDate, products, comments } = args;
 
     const supplier = await Supplier.findOne({
       where: {
@@ -148,7 +177,6 @@ const mutations = {
         supplierId: supplier.id,
         date,
         expectedDate,
-        warehouse,
         comments,
         products,
       },
@@ -203,11 +231,15 @@ const mutations = {
               innerItem.product.includes(data.capacity)
             ) {
               const newTotalQuantity =
-                parseInt(item.totalQuantity) + parseInt(innerItem.delivered);
+                parseInt(item.totalQuantity) +
+                parseInt(innerItem.delivered) -
+                parseInt(innerItem.damaged);
               const newOrdered =
                 parseInt(item.ordered) - parseInt(innerItem.quantity);
               const newAvailableStock =
-                parseInt(item.availableStock) + parseInt(innerItem.delivered);
+                parseInt(item.availableStock) +
+                parseInt(innerItem.delivered) -
+                parseInt(innerItem.damaged);
 
               await Stock.update(
                 {
@@ -226,14 +258,25 @@ const mutations = {
         }
       }
 
-      await Deliveries.update(
-        { state },
-        {
-          where: {
-            id: id,
-          },
-        }
-      );
+      if (state === "Odebrano") {
+        await Deliveries.update(
+          { state, date: new Date() },
+          {
+            where: {
+              id: id,
+            },
+          }
+        );
+      } else {
+        await Deliveries.update(
+          { state },
+          {
+            where: {
+              id: id,
+            },
+          }
+        );
+      }
 
       return deliveries;
     } catch (error) {
@@ -244,7 +287,6 @@ const mutations = {
       }
     }
   },
-
   updateValues: async (root, args, context) => {
     authCheck(context.token);
 

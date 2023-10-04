@@ -6,8 +6,9 @@ type orderShipment {
     employee: String!
     registrationNumber: String!
     deliveryDate: String!
-    warehouse: String!
     orders: JSON!
+    pickingList: JSON!
+    waybill: JSON
     state: String!
   }
 `;

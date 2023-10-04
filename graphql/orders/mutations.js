@@ -2,7 +2,6 @@ export const mutations = `
 createOrder(
     clientId: ID!
     expectedDate: String!
-    warehouse: String!
     products: JSON!
   ): Order
   deleteOrder(id: String!): Boolean!
@@ -11,10 +10,10 @@ updateOrder(
   clientId: ID!
   date: String
   expectedDate: String!
-  warehouse: String!
   products: JSON!
   ): Order!
   getOrder(id: String!): OrderList!
   updateOrderState(id: String! state: String!): Order!
   updateOrderProducts(id: String! products: JSON!): Order!
+  updateOrderTrasportType(id: String! transportType: String!): Order!
 `;

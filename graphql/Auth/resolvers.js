@@ -32,8 +32,7 @@ const mutations = {
   createUser: async (root, args, context) => {
     authCheck(context.token);
 
-    const { email, firstname, lastname, phone, magazine, position, adres } =
-      args;
+    const { email, firstname, lastname, phone, position, adres } = args;
 
     const userTaken = await User.findOne({ where: { email: email } }).catch(
       (err) => {
@@ -72,7 +71,6 @@ const mutations = {
       firstname: firstname,
       lastname: lastname,
       phone: phone,
-      magazine: magazine,
       position: position,
       adres: adres,
       firstLogin: true,
@@ -180,8 +178,7 @@ const mutations = {
   updateUser: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, email, firstname, lastname, phone, magazine, position, adres } =
-      args;
+    const { id, email, firstname, lastname, phone, position, adres } = args;
 
     await User.update(
       {
@@ -189,7 +186,6 @@ const mutations = {
         firstname: firstname,
         lastname: lastname,
         phone: phone,
-        magazine: magazine,
         position: position,
         adres: adres,
       },

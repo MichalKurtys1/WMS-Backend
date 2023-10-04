@@ -16,6 +16,10 @@ const Stock = sequelize.define("stock", {
       key: "id",
     },
   },
+  code: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   totalQuantity: {
     type: Sequelize.FLOAT,
     allowNull: true,

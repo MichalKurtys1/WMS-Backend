@@ -6,7 +6,6 @@ type Delivery {
   supplierId: ID!
   date: String
   expectedDate: String!
-  warehouse: String!
   products: JSON!
   state: String!
 }
@@ -32,7 +31,6 @@ type DeliveryList {
   supplier: Supplier!
   date: String
   expectedDate: String!
-  warehouse: String!
   products: JSON!
   state: String!
 }

@@ -21,13 +21,18 @@ const ordersShipments = sequelize.define("ordersShipments", {
     type: Sequelize.STRING,
     allowNull: false,
   },
-  warehouse: {
-    type: Sequelize.STRING,
-    allowNull: false,
-  },
   orders: {
     type: Sequelize.JSON,
     allowNull: false,
+  },
+  pickingList: {
+    type: Sequelize.JSON,
+    allowNull: false,
+  },
+  waybill: {
+    type: Sequelize.JSON,
+    allowNull: false,
+    defaultValue: "-",
   },
   state: {
     type: Sequelize.STRING,

@@ -5,11 +5,12 @@ scalar Upload
 type Order {
   id: ID!
   clientId: ID!
+  orderID: String
   date: String
   expectedDate: String!
-  warehouse: String!
   products: JSON!
   state: String!
+  transportType: String!
 }
 
 type Client {
@@ -29,10 +30,11 @@ type OrderList {
   id: ID!
   clientId: ID!
   client: Client!
+  orderID: String
   date: String
   expectedDate: String!
-  warehouse: String!
   products: JSON!
   state: String!
+  transportType: String!
 }
 `;

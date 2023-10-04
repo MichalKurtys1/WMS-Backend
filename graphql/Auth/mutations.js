@@ -4,7 +4,6 @@ export const mutations = `
     firstname: String!
     lastname: String!
     phone: String!
-    magazine: String!
     position: String!
     adres: String!
   ): UserData!
@@ -18,7 +17,6 @@ export const mutations = `
     firstname: String!
     lastname: String!
     phone: String!
-    magazine: String!
     position: String!
     adres: String!
     ): UserData!

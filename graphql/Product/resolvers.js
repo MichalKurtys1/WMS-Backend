@@ -6,6 +6,7 @@ import Client from "../../models/client";
 import Product from "../../models/product";
 import Supplier from "../../models/supplier";
 import { authCheck } from "../../utils/authCheck";
+import Stock from "../../models/stock";
 
 const queries = {
   products: async (root, args, context) => {
@@ -45,6 +46,28 @@ const mutations = {
       capacity,
       unit,
       pricePerUnit,
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    const lastStock = await Stock.findOne({
+      order: [["createdAt", "DESC"]],
+    }).catch((err) => {
+      throw new ApolloError("SERVER_ERROR");
+    });
+
+    let newCode;
+    if (lastStock) {
+      const lastCodeNumber = parseInt(lastStock.code.slice(1), 10);
+      const newNumber = lastCodeNumber + 1;
+      newCode = `A${newNumber.toString().padStart(5, "0")}`;
+    } else {
+      newCode = "A00001";
+    }
+
+    const stock = await Stock.create({
+      productId: product.id,
+      code: newCode,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
     });
