@@ -44,6 +44,10 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.JSON,
     allowNull: false,
   },
+  totalPrice: {
+    type: Sequelize.FLOAT,
+    allowNull: false,
+  },
 });
 
 Orders.hasMany(Shipping, {

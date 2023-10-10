@@ -34,6 +34,10 @@ const Deliveries = sequelize.define("deliveries", {
     type: Sequelize.JSON,
     allowNull: false,
   },
+  totalPrice: {
+    type: Sequelize.FLOAT,
+    allowNull: false,
+  },
 });
 
 export default Deliveries;

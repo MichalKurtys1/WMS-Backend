@@ -31,7 +31,7 @@ const mutations = {
   createOrder: async (root, args, context) => {
     authCheck(context.token);
 
-    const { clientId, expectedDate, products, comments } = args;
+    const { clientId, expectedDate, products, comments, totalPrice } = args;
 
     const client = await Client.findOne({
       where: {
@@ -40,7 +40,7 @@ const mutations = {
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
     });
-
+    console.log(clientId);
     if (!client) {
       throw new ApolloError("INPUT_ERROR");
     }
@@ -65,6 +65,7 @@ const mutations = {
       expectedDate,
       products,
       orderID: newCode,
+      totalPrice,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
     });
@@ -134,7 +135,8 @@ const mutations = {
   updateOrder: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, clientId, date, expectedDate, products, comments } = args;
+    const { id, clientId, date, expectedDate, products, comments, totalPrice } =
+      args;
 
     const client = await Client.findOne({
       where: {
@@ -154,6 +156,7 @@ const mutations = {
         date,
         expectedDate,
         products,
+        totalPrice,
       },
       {
         where: {
@@ -192,9 +195,8 @@ const mutations = {
   updateOrderState: async (root, args, context) => {
     authCheck(context.token);
     const { id, state } = args;
-    console.log("1");
     try {
-      if (state === "Odebrano") {
+      if (state === "Zakończono") {
         const order = await Orders.findByPk(id);
         let products = JSON.parse(JSON.parse(order.products));
         const stock = await Stock.findAll();
@@ -209,7 +211,6 @@ const mutations = {
             ) {
               const newTotalQuantity =
                 parseInt(item.totalQuantity) - parseInt(innerItem.quantity);
-              console.log("1");
               await Stock.update(
                 {
                   totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,

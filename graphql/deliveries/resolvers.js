@@ -27,7 +27,7 @@ const mutations = {
   createDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const { supplierId, expectedDate, products } = args;
+    const { supplierId, expectedDate, products, totalPrice } = args;
 
     const supplier = await Supplier.findOne({
       where: {
@@ -45,6 +45,7 @@ const mutations = {
       supplierId: supplier.id,
       expectedDate,
       products,
+      totalPrice,
     }).catch((err) => {
       throw new ApolloError("SERVER_ERROR");
     });
@@ -158,8 +159,15 @@ const mutations = {
   updateDelivery: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, supplierId, date, expectedDate, products, comments } = args;
-
+    const {
+      id,
+      supplierId,
+      date,
+      expectedDate,
+      products,
+      comments,
+      totalPrice,
+    } = args;
     const supplier = await Supplier.findOne({
       where: {
         name: supplierId,
@@ -171,7 +179,6 @@ const mutations = {
     if (!supplier) {
       throw new ApolloError("INPUT_ERROR");
     }
-
     await Deliveries.update(
       {
         supplierId: supplier.id,
@@ -179,6 +186,7 @@ const mutations = {
         expectedDate,
         comments,
         products,
+        totalPrice,
       },
       {
         where: {

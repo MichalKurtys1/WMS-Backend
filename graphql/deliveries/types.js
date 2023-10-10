@@ -8,6 +8,7 @@ type Delivery {
   expectedDate: String!
   products: JSON!
   state: String!
+  totalPrice: Float!
 }
 
 type Supplier {
@@ -33,5 +34,6 @@ type DeliveryList {
   expectedDate: String!
   products: JSON!
   state: String!
+  totalPrice: Float!
 }
 `;

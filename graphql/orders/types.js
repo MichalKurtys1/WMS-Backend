@@ -11,6 +11,7 @@ type Order {
   products: JSON!
   state: String!
   transportType: String!
+  totalPrice: Float!
 }
 
 type Client {
@@ -36,5 +37,6 @@ type OrderList {
   products: JSON!
   state: String!
   transportType: String!
+  totalPrice: Float!
 }
 `;
