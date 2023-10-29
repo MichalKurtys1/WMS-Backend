@@ -89,36 +89,21 @@ const mutations = {
           innerItem.product.includes(data.type) ||
           innerItem.product.includes(data.capacity)
         ) {
-          const newOrdered =
-            parseInt(item.availableStock) + parseInt(innerItem.quantity);
+          let newOrdered =
+            parseInt(item.preOrdered) - parseInt(innerItem.quantity);
 
-          if (newOrdered <= 0) {
-            await Stock.update(
-              {
-                availableStock: 0,
+          await Stock.update(
+            {
+              preOrdered: newOrdered <= 0 ? 0 : newOrdered,
+            },
+            {
+              where: {
+                id: item.id,
               },
-              {
-                where: {
-                  id: item.id,
-                },
-              }
-            ).catch((err) => {
-              throw new ApolloError("SERVER_ERROR");
-            });
-          } else {
-            await Stock.update(
-              {
-                availableStock: newOrdered,
-              },
-              {
-                where: {
-                  id: item.id,
-                },
-              }
-            ).catch((err) => {
-              throw new ApolloError("SERVER_ERROR");
-            });
-          }
+            }
+          ).catch((err) => {
+            throw new ApolloError("SERVER_ERROR");
+          });
         }
       }
     }
@@ -195,73 +180,100 @@ const mutations = {
   updateOrderState: async (root, args, context) => {
     authCheck(context.token);
     const { id, state } = args;
-    try {
-      if (state === "Zakończono") {
-        const order = await Orders.findByPk(id);
-        let products = JSON.parse(JSON.parse(order.products));
-        const stock = await Stock.findAll();
 
-        for (const item of stock) {
-          const data = await Product.findByPk(item.productId);
-          for (const innerItem of products) {
-            if (
-              innerItem.product.includes(data.name) ||
-              innerItem.product.includes(data.type) ||
-              innerItem.product.includes(data.capacity)
-            ) {
-              const newTotalQuantity =
-                parseInt(item.totalQuantity) - parseInt(innerItem.quantity);
-              await Stock.update(
-                {
-                  totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+    if (state === "Zakończono") {
+      const order = await Orders.findByPk(id);
+      let products = JSON.parse(JSON.parse(order.products));
+      const stock = await Stock.findAll();
+
+      for (const item of stock) {
+        const data = await Product.findByPk(item.productId);
+        for (const innerItem of products) {
+          if (
+            innerItem.product.includes(data.name) ||
+            innerItem.product.includes(data.type) ||
+            innerItem.product.includes(data.capacity)
+          ) {
+            const newTotalQuantity =
+              parseInt(item.totalQuantity) - parseInt(innerItem.quantity);
+            await Stock.update(
+              {
+                totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+              },
+              {
+                where: {
+                  id: item.id,
                 },
-                {
-                  where: {
-                    id: item.id,
-                  },
-                }
-              );
-              await Orders.update(
-                { state },
-                {
-                  where: {
-                    id: id,
-                  },
-                }
-              );
-            }
+              }
+            );
+            await Orders.update(
+              { state },
+              {
+                where: {
+                  id: id,
+                },
+              }
+            );
           }
         }
-      } else if (state === "Potwierdzono") {
-        await Orders.update(
-          { state, date: new Date() },
-          {
-            where: {
-              id: id,
-            },
-          }
-        );
-      } else {
-        await Orders.update(
-          { state },
-          {
-            where: {
-              id: id,
-            },
-          }
-        );
       }
+    } else if (state === "Potwierdzono") {
+      const order = await Orders.findByPk(id);
+      let products = JSON.parse(JSON.parse(order.products));
+      const stock = await Stock.findAll();
 
-      const orders = await Orders.findByPk(id);
+      for (const item of stock) {
+        const data = await Product.findByPk(item.productId);
+        for (const innerItem of products) {
+          if (
+            innerItem.product.includes(data.name) ||
+            innerItem.product.includes(data.type) ||
+            innerItem.product.includes(data.capacity)
+          ) {
+            if (item.preOrdered > item.availableStock) {
+              throw new ApolloError("NOT_ENOUGH_PRODUCTS");
+            }
+            const newTotalQuantity =
+              parseInt(item.preOrdered) - parseInt(innerItem.quantity);
+            const newVal =
+              parseInt(item.availableStock) - parseInt(innerItem.quantity);
 
-      return orders;
-    } catch (error) {
-      if (error.name === "SequelizeDatabaseError") {
-        throw new ApolloError("DATABASE_ERROR");
-      } else {
-        throw new ApolloError("SERVER_ERROR");
+            await Stock.update(
+              {
+                preOrdered: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+                availableStock: newVal < 0 ? 0 : newVal,
+              },
+              {
+                where: {
+                  id: item.id,
+                },
+              }
+            );
+          }
+        }
       }
+      await Orders.update(
+        { state, date: new Date() },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+    } else {
+      await Orders.update(
+        { state },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
     }
+
+    const orders = await Orders.findByPk(id);
+
+    return orders;
   },
   updateOrderProducts: async (root, args, context) => {
     authCheck(context.token);

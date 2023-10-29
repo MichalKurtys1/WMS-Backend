@@ -32,7 +32,7 @@ const Orders = sequelize.define("orders", {
   },
   state: {
     type: Sequelize.STRING,
-    defaultValue: "Zamówiono",
+    defaultValue: "Pre Order",
     allowNull: true,
   },
   transportType: {

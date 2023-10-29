@@ -151,6 +151,15 @@ const mutations = {
       encoding,
     } = await file;
 
+    if (
+      mimetype !==
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
+      mimetype !== "application/pdf" &&
+      mimetype !== "text/plain"
+    ) {
+      return;
+    }
+
     const fileExists = await Files.findOne({
       where: {
         filename: filename,

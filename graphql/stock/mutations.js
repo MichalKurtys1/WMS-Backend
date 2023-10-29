@@ -10,6 +10,7 @@ updateStock(
   totalQuantity: Float
   availableStock: Float
   ordered: Float
+  preOrdered: Float
   ): Stock!
   getStock(id: String!): Stock!
 `;

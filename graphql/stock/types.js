@@ -6,6 +6,7 @@ export const types = `
     totalQuantity: Float!
     availableStock: Float!
     ordered: Float!
+    preOrdered: Float!
   }
 
   type StockData {
@@ -16,5 +17,6 @@ export const types = `
     availableStock: Float!
     ordered: Float!
     product: ProductData!
+    preOrdered: Float!
   }
 `;

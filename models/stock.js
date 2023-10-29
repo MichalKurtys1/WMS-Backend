@@ -35,6 +35,11 @@ const Stock = sequelize.define("stock", {
     allowNull: true,
     defaultValue: 0,
   },
+  preOrdered: {
+    type: Sequelize.FLOAT,
+    allowNull: true,
+    defaultValue: 0,
+  },
 });
 
 export default Stock;

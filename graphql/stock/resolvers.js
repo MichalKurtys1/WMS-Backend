@@ -61,7 +61,14 @@ const mutations = {
   updateStock: async (root, args, context) => {
     authCheck(context.token);
 
-    const { id, productId, totalQuantity, availableStock, ordered } = args;
+    const {
+      id,
+      productId,
+      totalQuantity,
+      availableStock,
+      ordered,
+      preOrdered,
+    } = args;
 
     if (productId) {
       const product = await Product.findOne({
@@ -96,6 +103,19 @@ const mutations = {
         await Stock.update(
           {
             ordered: ordered ? ordered : 0,
+          },
+          {
+            where: {
+              id: id,
+            },
+          }
+        ).catch((err) => {
+          throw new ApolloError("SERVER_ERROR");
+        });
+      } else if (preOrdered || preOrdered === 0) {
+        await Stock.update(
+          {
+            preOrdered: preOrdered ? preOrdered : 0,
           },
           {
             where: {

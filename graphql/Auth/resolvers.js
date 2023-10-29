@@ -2,19 +2,16 @@ import User from "../../models/user";
 import { ApolloError } from "apollo-server-express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
 import { authCheck } from "../../utils/authCheck";
+import emailjs from "@emailjs/nodejs";
+import dotenv from "dotenv";
 
-const sendgridTransport = require("nodemailer-sendgrid-transport");
+dotenv.config();
 
-const transoprter = nodemailer.createTransport(
-  sendgridTransport({
-    auth: {
-      api_key:
-        "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",
-    },
-  })
-);
+emailjs.init({
+  publicKey: process.env.EMAILJS_PUBLIC_TOKEN,
+  privateKey: process.env.EMAILJS_PRIVATE_TOKEN,
+});
 
 const queries = {
   users: async (root, args, context) => {
@@ -46,19 +43,17 @@ const mutations = {
 
     const randomPassword = Math.random().toString(36).slice(-8);
 
-    transoprter
-      .sendMail({
-        to: email,
-        from: "atak2001@wp.pl",
-        subject: "Hasło do twojego konta",
-        html: `<h1>${randomPassword}</h1>`,
-      })
-      .then((result) => {
-        console.log("Wysłono na email");
-      })
-      .catch((err) => {
-        throw new ApolloError("EMAIL_SEND_ERROR");
-      });
+    var templateParams = {
+      name: email,
+      message: `Hasło do twojego konta to: ${randomPassword}`,
+    };
+
+    await emailjs.send(
+      process.env.EMAILJS_SERVICE,
+      process.env.EMAILJS_TEMPLATE,
+      templateParams,
+      process.env.EMAILJS_PUBLIC_TOKEN
+    );
 
     // tymczasowe
     console.log(randomPassword);
