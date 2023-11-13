@@ -3,7 +3,7 @@ import sequelize from "../utils/db";
 import Supplier from "./supplier";
 import Deliveries from "./deliveries";
 
-const ordersShipments = sequelize.define("ordersShipments", {
+const shipments = sequelize.define("shipments", {
   id: {
     type: Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
@@ -41,4 +41,4 @@ const ordersShipments = sequelize.define("ordersShipments", {
   },
 });
 
-export default ordersShipments;
+export default shipments;

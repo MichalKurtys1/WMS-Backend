@@ -1,5 +1,5 @@
 import express from "express";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloError, ApolloServer } from "apollo-server-express";
 import { graphqlUploadExpress } from "graphql-upload-minimal";
 import dotenv from "dotenv";
 import { typeDefs, resolvers } from "./graphql";
@@ -19,26 +19,27 @@ const port = process.env.PORT;
 
 const app = express();
 
-// może powodować error -> teraz już chyba nie
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-  })
-);
+process.on("uncaughtException", function (err) {
+  console.error(err);
+});
 
-//
+process.on("unhandledRejection", (reason, promise) => {
+  console.log("Unhandled Rejection at:", promise, "reason:", reason);
+});
 
-app.use(express.static(path.join(__dirname, "public")));
-app.use(graphqlUploadExpress());
+app.use(helmet());
 
-// może powodować error
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
+  legacyHeaders: true,
+  message: "Too many requests",
 });
 
 app.use(limiter);
-//
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use(graphqlUploadExpress());
 
 const apolloServer = new ApolloServer({
   typeDefs,

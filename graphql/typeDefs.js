@@ -6,10 +6,10 @@ import { Deliveries } from "./deliveries";
 import { Product } from "./Product";
 import { Orders } from "./orders";
 import { Stock } from "./stock";
-import { Shipping } from "./shipping";
-import { orderShipments } from "./ordersShipments";
+import { Shipments } from "./Shipments";
 import { Files } from "../graphql/Files/index";
 import { Calendar } from "./Calendar";
+import { Raports } from "./Raports";
 
 const typeDefs = gql`
   ${Auth.types}
@@ -19,10 +19,10 @@ const typeDefs = gql`
   ${Product.types}
   ${Orders.types}
   ${Stock.types}
-  ${Shipping.types}
-  ${orderShipments.types}
+  ${Shipments.types}
   ${Files.types}
   ${Calendar.types}
+  ${Raports.types}
   
   type Query {
     ${Auth.queries}
@@ -32,10 +32,10 @@ const typeDefs = gql`
     ${Product.queries}
     ${Orders.queries}
     ${Stock.queries}
-    ${Shipping.queries}
-    ${orderShipments.queries}
+    ${Shipments.queries}
     ${Files.queries}
     ${Calendar.queries}
+    ${Raports.queries}
   }
   
   type Mutation {
@@ -46,10 +46,10 @@ const typeDefs = gql`
     ${Product.mutations}
     ${Orders.mutations}
     ${Stock.mutations}
-    ${Shipping.mutations}
-    ${orderShipments.mutations}
+    ${Shipments.mutations}
     ${Files.mutations}
     ${Calendar.mutations}
+    ${Raports.mutations}
   }
 `;
 

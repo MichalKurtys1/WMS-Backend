@@ -1,7 +1,7 @@
 export const types = `
 scalar JSON
 
-type orderShipment {
+type Shipment {
     id: ID
     employee: String!
     registrationNumber: String!
@@ -10,5 +10,11 @@ type orderShipment {
     pickingList: JSON!
     waybill: JSON
     state: String!
+  }
+
+  type FormattedData {
+    shipment: JSON!
+    orders: JSON!
+    products: JSON!
   }
 `;

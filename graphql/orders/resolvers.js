@@ -7,11 +7,9 @@ import Supplier from "../../models/supplier";
 import Files from "../../models/files";
 import Deliveries from "../../models/deliveries";
 import Orders from "../../models/orders";
-import OrdersShipments from "../../models/ordersShipments";
 import { authCheck } from "../../utils/authCheck";
 import Stock from "../../models/stock";
 import Product from "../../models/product";
-import ordersShipments from "../../models/ordersShipments";
 
 const queries = {
   orders: async (root, args, context) => {
@@ -20,7 +18,7 @@ const queries = {
     const orders = await Orders.findAll({
       include: [Client],
     }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
+      throw new ApolloError(error);
     });
 
     return orders;
@@ -29,163 +27,87 @@ const queries = {
 
 const mutations = {
   createOrder: async (root, args, context) => {
-    authCheck(context.token);
+    try {
+      authCheck(context.token);
 
-    const { clientId, expectedDate, products, comments, totalPrice } = args;
+      const { clientId, expectedDate, products, comments, totalPrice } = args;
 
-    const client = await Client.findOne({
-      where: {
-        name: clientId,
-      },
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-    console.log(clientId);
-    if (!client) {
-      throw new ApolloError("INPUT_ERROR");
-    }
+      const client = await Client.findOne({
+        where: {
+          name: clientId,
+        },
+      });
 
-    const lastOrder = await Orders.findOne({
-      order: [["createdAt", "DESC"]],
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    let newCode;
-    if (lastOrder) {
-      const lastCodeNumber = parseInt(lastOrder.orderID.slice(3), 10);
-      const newNumber = lastCodeNumber + 1;
-      newCode = `OUT${newNumber.toString().padStart(5, "0")}`;
-    } else {
-      newCode = "OUT00001";
-    }
-
-    const orders = await Orders.create({
-      clientId: client.id,
-      expectedDate,
-      products,
-      orderID: newCode,
-      totalPrice,
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    return orders;
-  },
-  deleteOrder: async (root, args, context) => {
-    authCheck(context.token);
-    const id = args.id;
-
-    const order = await Orders.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-    let products = JSON.parse(JSON.parse(order.products));
-    const stock = await Stock.findAll();
-    for (const item of stock) {
-      const data = await Product.findByPk(item.productId);
-      for (const innerItem of products) {
-        if (
-          innerItem.product.includes(data.name) ||
-          innerItem.product.includes(data.type) ||
-          innerItem.product.includes(data.capacity)
-        ) {
-          let newOrdered =
-            parseInt(item.preOrdered) - parseInt(innerItem.quantity);
-
-          await Stock.update(
-            {
-              preOrdered: newOrdered <= 0 ? 0 : newOrdered,
-            },
-            {
-              where: {
-                id: item.id,
-              },
-            }
-          ).catch((err) => {
-            throw new ApolloError("SERVER_ERROR");
-          });
-        }
+      if (!client) {
+        throw new ApolloError("INPUT_ERROR");
       }
-    }
 
-    Orders.destroy({
-      where: {
-        id: id,
-      },
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-    return true;
-  },
-  updateOrder: async (root, args, context) => {
-    authCheck(context.token);
+      const lastOrder = await Orders.findOne({
+        order: [["createdAt", "DESC"]],
+      });
 
-    const { id, clientId, date, expectedDate, products, comments, totalPrice } =
-      args;
+      let newCode;
+      if (lastOrder) {
+        const lastCodeNumber = parseInt(lastOrder.orderID.slice(3), 10);
+        const newNumber = lastCodeNumber + 1;
+        newCode = `OUT${newNumber.toString().padStart(5, "0")}`;
+      } else {
+        newCode = "OUT00001";
+      }
 
-    const client = await Client.findOne({
-      where: {
-        name: clientId,
-      },
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    if (!client) {
-      throw new ApolloError("INPUT_ERROR");
-    }
-
-    await Orders.update(
-      {
+      const orders = await Orders.create({
         clientId: client.id,
-        date,
         expectedDate,
         products,
+        orderID: newCode,
         totalPrice,
-      },
-      {
-        where: {
-          id: id,
-        },
+      });
+
+      const stocks = await Stock.findAll({
+        include: [Product],
+      });
+
+      const parsedProducts = JSON.parse(products);
+
+      for (const item of parsedProducts) {
+        const stock = stocks.find(
+          (stock) =>
+            item.product.includes(stock.product.name) &&
+            item.product.includes(stock.product.type) &&
+            item.product.includes(stock.product.capacity)
+        );
+
+        let newValue = parseInt(stock.preOrdered) + parseInt(item.quantity);
+
+        if (newValue < 0) {
+          throw new ApolloError(error);
+        }
+
+        await Stock.update(
+          {
+            preOrdered: newValue,
+          },
+          {
+            where: {
+              id: stock.id,
+            },
+          }
+        );
       }
-    ).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
 
-    const order = await Orders.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    if (!order) {
-      throw new ApolloError("INPUT_ERROR");
+      return orders;
+    } catch (error) {
+      throw new ApolloError(error);
     }
-
-    return order;
   },
-  getOrder: async (root, args, context) => {
-    authCheck(context.token);
+  deleteOrder: async (root, args, context) => {
+    try {
+      authCheck(context.token);
+      const id = args.id;
 
-    const id = args.id;
-    const orders = await Orders.findByPk(id, {
-      include: [Client],
-    }).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-    console.log(id);
-    if (!orders) {
-      throw new ApolloError("INPUT_ERROR");
-    }
-    return orders;
-  },
-  updateOrderState: async (root, args, context) => {
-    authCheck(context.token);
-    const { id, state } = args;
-
-    if (state === "Zakończono") {
       const order = await Orders.findByPk(id);
       let products = JSON.parse(JSON.parse(order.products));
       const stock = await Stock.findAll();
-
       for (const item of stock) {
         const data = await Product.findByPk(item.productId);
         for (const innerItem of products) {
@@ -194,11 +116,12 @@ const mutations = {
             innerItem.product.includes(data.type) ||
             innerItem.product.includes(data.capacity)
           ) {
-            const newTotalQuantity =
-              parseInt(item.totalQuantity) - parseInt(innerItem.quantity);
+            let newOrdered =
+              parseInt(item.preOrdered) - parseInt(innerItem.quantity);
+
             await Stock.update(
               {
-                totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+                preOrdered: newOrdered <= 0 ? 0 : newOrdered,
               },
               {
                 where: {
@@ -206,18 +129,206 @@ const mutations = {
                 },
               }
             );
-            await Orders.update(
-              { state },
-              {
-                where: {
-                  id: id,
-                },
-              }
-            );
           }
         }
       }
-    } else if (state === "Potwierdzono") {
+
+      Orders.destroy({
+        where: {
+          id: id,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      throw new ApolloError(error);
+    }
+  },
+  updateOrder: async (root, args, context) => {
+    try {
+      authCheck(context.token);
+
+      const {
+        id,
+        clientId,
+        date,
+        expectedDate,
+        products,
+        comments,
+        totalPrice,
+      } = args;
+
+      const client = await Client.findOne({
+        where: {
+          name: clientId,
+        },
+      });
+
+      if (!client) {
+        throw new ApolloError("INPUT_ERROR");
+      }
+
+      const orders = await Orders.findByPk(id);
+      const stocks = await Stock.findAll({
+        include: [Product],
+      });
+
+      JSON.parse(JSON.parse(orders.products)).forEach(async (item) => {
+        const stock = stocks.find(
+          (stock) =>
+            item.product.includes(stock.product.name) &&
+            item.product.includes(stock.product.type) &&
+            item.product.includes(stock.product.capacity)
+        );
+
+        let newValue = parseInt(stock.preOrdered) - parseInt(item.quantity);
+
+        await Stock.update(
+          {
+            preOrdered: newValue,
+          },
+          {
+            where: {
+              id: stock.id,
+            },
+          }
+        );
+      });
+
+      await Orders.update(
+        {
+          clientId: client.id,
+          date,
+          expectedDate,
+          products,
+          totalPrice,
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+
+      const newStocks = await Stock.findAll({
+        include: [Product],
+      });
+
+      JSON.parse(products).forEach(async (item) => {
+        const stock = newStocks.find(
+          (stock) =>
+            item.product.includes(stock.product.name) &&
+            item.product.includes(stock.product.type) &&
+            item.product.includes(stock.product.capacity)
+        );
+
+        let newValue = parseInt(stock.preOrdered) + parseInt(item.quantity);
+
+        await Stock.update(
+          {
+            preOrdered: newValue,
+          },
+          {
+            where: {
+              id: stock.id,
+            },
+          }
+        );
+      });
+
+      const newOrder = await Orders.findByPk(id);
+
+      if (!newOrder) {
+        throw new ApolloError("INPUT_ERROR");
+      }
+
+      return newOrder;
+    } catch (error) {
+      throw new ApolloError(error);
+    }
+  },
+  getOrder: async (root, args, context) => {
+    try {
+      authCheck(context.token);
+
+      const id = args.id;
+      const orders = await Orders.findByPk(id, {
+        include: [Client],
+      });
+
+      if (!orders) {
+        throw new ApolloError("INPUT_ERROR");
+      }
+      return orders;
+    } catch (error) {
+      throw new ApolloError(error);
+    }
+  },
+  updateOrderState: async (root, args, context) => {
+    try {
+      authCheck(context.token);
+      const { id, state } = args;
+
+      if (state === "Zakończono") {
+        const order = await Orders.findByPk(id);
+        let products = JSON.parse(JSON.parse(order.products));
+        const stock = await Stock.findAll();
+
+        for (const item of stock) {
+          const data = await Product.findByPk(item.productId);
+          for (const innerItem of products) {
+            if (
+              innerItem.product.includes(data.name) &&
+              innerItem.product.includes(data.type) &&
+              innerItem.product.includes(data.capacity)
+            ) {
+              const newTotalQuantity =
+                parseInt(item.totalQuantity) - parseInt(innerItem.quantity);
+
+              await Stock.update(
+                {
+                  totalQuantity: newTotalQuantity < 0 ? 0 : newTotalQuantity,
+                },
+                {
+                  where: {
+                    id: item.id,
+                  },
+                }
+              );
+              await Orders.update(
+                { state },
+                {
+                  where: {
+                    id: id,
+                  },
+                }
+              );
+            }
+          }
+        }
+      } else {
+        await Orders.update(
+          { state },
+          {
+            where: {
+              id: id,
+            },
+          }
+        );
+      }
+
+      const orders = await Orders.findByPk(id);
+
+      return orders;
+    } catch (error) {
+      throw new ApolloError(error);
+    }
+  },
+  updateOrderTrasportType: async (root, args, context) => {
+    try {
+      authCheck(context.token);
+      const { id, transportType } = args;
+
       const order = await Orders.findByPk(id);
       let products = JSON.parse(JSON.parse(order.products));
       const stock = await Stock.findAll();
@@ -226,8 +337,8 @@ const mutations = {
         const data = await Product.findByPk(item.productId);
         for (const innerItem of products) {
           if (
-            innerItem.product.includes(data.name) ||
-            innerItem.product.includes(data.type) ||
+            innerItem.product.includes(data.name) &&
+            innerItem.product.includes(data.type) &&
             innerItem.product.includes(data.capacity)
           ) {
             if (item.preOrdered > item.availableStock) {
@@ -252,78 +363,30 @@ const mutations = {
           }
         }
       }
+
       await Orders.update(
-        { state, date: new Date() },
+        {
+          state: "Potwierdzono",
+          date: new Date(),
+          transportType: transportType,
+        },
         {
           where: {
             id: id,
           },
         }
       );
-    } else {
-      await Orders.update(
-        { state },
-        {
-          where: {
-            id: id,
-          },
-        }
-      );
-    }
 
-    const orders = await Orders.findByPk(id);
+      const newOrder = await Orders.findByPk(id);
 
-    return orders;
-  },
-  updateOrderProducts: async (root, args, context) => {
-    authCheck(context.token);
-    const { id, products } = args;
-
-    await Orders.update(
-      { products },
-      {
-        where: {
-          id: id,
-        },
+      if (!newOrder) {
+        throw new ApolloError("INPUT_ERROR");
       }
-    ).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
 
-    const order = await Orders.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    if (!order) {
-      throw new ApolloError("INPUT_ERROR");
+      return newOrder;
+    } catch (error) {
+      throw new ApolloError(error);
     }
-
-    return order;
-  },
-  updateOrderTrasportType: async (root, args, context) => {
-    authCheck(context.token);
-    const { id, transportType } = args;
-
-    await Orders.update(
-      { transportType },
-      {
-        where: {
-          id: id,
-        },
-      }
-    ).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    const order = await Orders.findByPk(id).catch((err) => {
-      throw new ApolloError("SERVER_ERROR");
-    });
-
-    if (!order) {
-      throw new ApolloError("INPUT_ERROR");
-    }
-
-    return order;
   },
 };
 

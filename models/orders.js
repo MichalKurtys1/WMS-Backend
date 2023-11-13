@@ -2,7 +2,6 @@ import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
 import Client from "./client";
-import Shipping from "./shipping";
 
 const Orders = sequelize.define("orders", {
   id: {
@@ -48,14 +47,6 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.FLOAT,
     allowNull: false,
   },
-});
-
-Orders.hasMany(Shipping, {
-  foreignKey: "orderId",
-});
-Shipping.belongsTo(Orders, {
-  foreignKey: "orderId",
-  onDelete: "CASCADE",
 });
 
 export default Orders;

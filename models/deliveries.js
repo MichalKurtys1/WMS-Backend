@@ -1,7 +1,6 @@
 import Sequelize from "sequelize";
 import sequelize from "../utils/db";
 import Supplier from "./supplier";
-import Shipping from "./shipping";
 
 const Deliveries = sequelize.define("deliveries", {
   id: {

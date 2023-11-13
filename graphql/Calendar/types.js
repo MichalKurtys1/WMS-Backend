@@ -1,4 +1,5 @@
 export const types = `
+scalar JSON
 
 type Calendar {
     id: ID!
@@ -6,4 +7,10 @@ type Calendar {
     time: String!
     event: String!
   }
+
+  type FormatedCalendar {
+    standardData: JSON!
+    carrierData: JSON!
+  }
+
 `;
